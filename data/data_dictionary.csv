@@ -1,0 +1,43 @@
+﻿ColumnName,Description
+REPORTER_DEA_NO,"Unique id of entity reporting shipments to DEA. Reporters must have unique id for each facility, so some repoerters have multiple ids."
+REPORTER_BUS_ACT,"Type of business the reporter does, typically distributors or manufacturers."
+REPORTER_NAME,Name of entity reporting shipments to the DEA.
+REPORTER_ADDL_CO_INFO,Additional company information for entity reporting shipments to the DEA.
+REPORTER_ADDRESS1,Address of entity reporting shipments to the DEA.
+REPORTER_ADDRESS2,Additional address field for entity reporting shipments to the DEA.
+REPORTER_CITY,City of entity reporting shipments to the DEA.
+REPORTER_STATE,State of entity reporting shipments to the DEA.
+REPORTER_ZIP,Zip code of entity reporting shipments to the DEA.
+REPORTER_COUNTY,County of entity reporting shipments to the DEA.
+BUYER_DEA_NO,Unique id of entity receiving shipments from reporter.
+BUYER_BUS_ACT,"Type of business the reporter does. Our data set limits to retail pharmacies, chain pharmacies and types of practitioners, though full data set includes more including mail order pharmacies, hospitals and distributors, among others."
+BUYER_NAME,Name of entity receiving shipments from reporter.
+BUYER_ADDL_CO_INFO,Additional company information for entity receiving shipments from reporter.
+BUYER_ADDRESS1,Address of entity receiving shipments from reporter.
+BUYER_ADDRESS2,Additional address field for entity receiving shipments from reporter.
+BUYER_CITY,City of entity receiving shipments from reporter.
+BUYER_STATE,State of entity receiving shipments from reporter.
+BUYER_ZIP,Zip code of entity receiving shipments from reporter.
+BUYER_COUNTY,County of entity receiving shipments from reporter.
+TRANSACTION_CODE,"Code determining whether a transaction increases or decreases the reporter's inventory. Post data contains only those with code ""S"" for sale, though the full data includes more transaction types including returns and shipments lost in transit, among others."
+DRUG_CODE,"A four-digit Controlled Substance Code Number that identifies the shipped, regardless of form (pills, patches or nasal sprays, among others) or size (5 milligram, 30 milligram or 80 milligram, among others)."
+NDC_NO,"National Drug Code. The code contains information on the drug product’s manufacturer or distributor, its active ingredient, strength and package size."
+DRUG_NAME,"Name of drug corresponding with DRUG_CODE. Post data contains only oxycodone and hydrocodone, though full data set contains drugs includingcodeine, morphine and fentanyl, among others."
+QUANTITY,"Number of packages, weight or volume of shipment. This can take many forms including boxes of boxes or bottles of pills among others. "
+UNIT,"Unit of measurement for QUANTITY. Values include 1: Micrograms, 2:  Milligrams, 3: Grams, 4: Kilograms, 5: Milliliters, 6: Liters, D: Dozens, K: Thousands."
+ACTION_INDICATOR,"Indication of corrected shipments by reporter. Values include A: adjust, D: Delete or I: insert(late-reporter shipment)."
+ORDER_FORM_NO,Identifies bath of transactions.
+CORRECTION_NO,Identifies a corrected transaction replacing a previously submitted transaction that had been rejected.
+STRENGTH,"One of three values: ""(1) the purity of a bulk rawmaterial  (2) the fractional portion of a standard NDC package size or (3) the percentage by which a package exceeds a standard NDC package size."""
+TRANSACTION_DATE,Date shipment occurred.
+CALC_BASE_WT_IN_GM,"DEA added field indicating the total active weight of the drug in the transaction, in grams."
+DOSAGE_UNIT,"DEA calculated field indicating number of pills, patches or lozenges, among others, shipped as part of the transaction."
+TRANSACTION_ID,Unique record of transaction.
+Product_Name,Trade name of NDC_NO.
+Ingredient_Name,Name of the active ingredient in the drug shipped.
+Measure,Dosage form. 
+MME_Conversion_Factor,"Morphine Milligram Equivalent, or how the specific drug compares to a morphine equivilent."
+Combined_Labeler_Name,"Cleaned and combined name of entity that manufactured, distributed or relabeled the drug product in the transaction."
+Revised_Company_Name,Cleaned and combined version of Combined_Labeler_Name
+Reporter_family,Cleaned and combined version of REPORTER_NAME.
+dos_str,Strength of dose in milligrams.
