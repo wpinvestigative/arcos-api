@@ -1,6 +1,3 @@
-# Behind the data
-
------
 # ARCOS API
 
 These are the files that help run the [ARCOS API](https://arcos-api.ext.nile.works/__swagger__/).
