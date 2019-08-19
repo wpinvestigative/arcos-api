@@ -1,7 +1,7 @@
 #* @apiTitle Washington Post ARCOS API
 #* @apiDescription API to access the DEA's ARCOS data prepared by [The Washington Post](https://www.washingtonpost.com/graphics/2019/investigations/dea-pain-pill-database/). 
 #*   Check out the R package [ARCOS](https://github.com/wpinvestigative/arcos), that's a wrapper for this API.
-#*   Use "WaPo" as the key or use any of the keys [listed here](). 
+#*   Use "WaPo" as the key or use any of the keys [listed here](https://github.com/wpinvestigative/arcos/blob/master/keys/keys.txt). 
 #*   We reserve the right to discontinue these keys and invite users to sign up for their own individual one in the future if the need arises.
 #*   There are three categories of data offered in this API. 1) Raw and slices of the raw data  
 #*   2) Summarized data (based on our [filters and criteria](https://www.washingtonpost.com/national/2019/07/18/how-download-use-dea-pain-pills-database/)) for easier analysis 
@@ -32,7 +32,7 @@ county_relationship_fips <- county_relationship_file %>% pull(countyfips) %>% un
 function(state, county, key, res){
   
   if (missing(key)) {
-    return(list(error="Authentication required"))
+    return(list(error="Authentication required. Did you include an API key?"))
   } else {
     if (key %in% list_of_keys) {
       
@@ -40,7 +40,7 @@ function(state, county, key, res){
       
       state_abb <- str_to_upper(state)
       county_name <- str_to_upper(county)
-      county_name <- gsub("-", " ", county_name)
+      #county_name <- gsub("-", " ", county_name)
       county_name <- gsub("%20", " ", county_name)
       county_relationship_file_only <- county_relationship_file %>% 
         filter(BUYER_STATE==state_abb & BUYER_COUNTY==county_name)
@@ -66,7 +66,7 @@ function(state, county, key, res){
       
       
     } else {
-      return(list(error="Authentication required"))
+      return(list(error="Authentication required. Did you include an API key?"))
     }
   }
 }
@@ -84,7 +84,7 @@ function(state, county, key){
   
   
   if (missing(key)) {
-    return(list(error="Authentication required"))
+    return(list(error="Authentication required. Did you include an API key?"))
   } else {
     if (key %in% list_of_keys) {
       
@@ -113,7 +113,7 @@ function(state, county, key){
       return(df)
       
     } else {
-      return(list(error="Authentication required"))
+      return(list(error="Authentication required. Did you include an API key?"))
     }
     
   }
@@ -131,7 +131,7 @@ function(key){
   
   
   if (missing(key)) {
-    return(list(error="Authentication required"))
+    return(list(error="Authentication required. Did you include an API key?"))
   } else {
     if (key %in% list_of_keys) {
       
@@ -140,7 +140,7 @@ function(key){
       return(df)
       
     } else {
-      return(list(error="Authentication required"))
+      return(list(error="Authentication required. Did you include an API key?"))
     }
     
   }
@@ -159,7 +159,7 @@ function(state, key){
   
   
   if (missing(key)) {
-    return(list(error="Authentication required"))
+    return(list(error="Authentication required. Did you include an API key?"))
   } else {
     if (key %in% list_of_keys) {
       
@@ -178,7 +178,7 @@ function(state, key){
       return(df)
       
     } else {
-      return(list(error="Authentication required"))
+      return(list(error="Authentication required. Did you include an API key?"))
     }
     
   }
@@ -191,11 +191,12 @@ function(state, key){
 #' @param fips If provided, filter the data to only this county (e.g. '01001' for Autauga, Alabama)
 #' @param key Key needed to make query successful
 #' @param res Response object
+#' @tag raw
 #' @get /county_fips_data
 function(fips, key, res){
   
   if (missing(key)) {
-    return(list(error="Authentication required"))
+    return(list(error="Authentication required. Did you include an API key?"))
   } else {
     if (key %in% list_of_keys) {
       
@@ -225,7 +226,7 @@ function(fips, key, res){
       }
       
     } else {
-      return(list(error="Authentication required"))
+      return(list(error="Authentication required. Did you include an API key?"))
     }
   }
 }
@@ -242,7 +243,7 @@ function(fips, key, res){
 function(state, county, key){
   
   if (missing(key)) {
-    return(list(error="Authentication required"))
+    return(list(error="Authentication required. Did you include an API key?"))
   } else {
     if (key %in% list_of_keys) {
       
@@ -271,7 +272,7 @@ function(state, county, key){
       return(df)
       
     } else {
-      return(list(error="Authentication required"))
+      return(list(error="Authentication required. Did you include an API key?"))
     }
     
   }
@@ -287,7 +288,7 @@ function(state, county, key){
 function(state, county, key){
   
   if (missing(key)) {
-    return(list(error="Authentication required"))
+    return(list(error="Authentication required. Did you include an API key?"))
   } else {
     if (key %in% list_of_keys) {
       
@@ -316,7 +317,7 @@ function(state, county, key){
       return(df)
       
     } else {
-      return(list(error="Authentication required"))
+      return(list(error="Authentication required. Did you include an API key?"))
     }
     
   }
@@ -332,7 +333,7 @@ function(state, county, key){
 function(state, county, key){
   
   if (missing(key)) {
-    return(list(error="Authentication required"))
+    return(list(error="Authentication required. Did you include an API key?"))
   } else {
     if (key %in% list_of_keys) {
       
@@ -361,7 +362,7 @@ function(state, county, key){
       return(df)
       
     } else {
-      return(list(error="Authentication required"))
+      return(list(error="Authentication required. Did you include an API key?"))
     }
     
   }
@@ -377,7 +378,7 @@ function(state, county, key){
 function(state, county, key){
   
   if (missing(key)) {
-    return(list(error="Authentication required"))
+    return(list(error="Authentication required. Did you include an API key?"))
   } else {
     if (key %in% list_of_keys) {
       
@@ -406,7 +407,7 @@ function(state, county, key){
       return(df)
       
     } else {
-      return(list(error="Authentication required"))
+      return(list(error="Authentication required. Did you include an API key?"))
     }
     
   }
@@ -425,7 +426,7 @@ function(state, county, key){
 function(buyer_dea_no, key, res){
   
   if (missing(key)) {
-    return(list(error="Authentication required"))
+    return(list(error="Authentication required. Did you include an API key?"))
   } else {
     if (key %in% list_of_keys) {
       
@@ -457,7 +458,7 @@ function(buyer_dea_no, key, res){
       }
       
     } else {
-      return(list(error="Authentication required"))
+      return(list(error="Authentication required. Did you include an API key?"))
     }
     
   }
@@ -475,7 +476,7 @@ function(buyer_dea_no, key, res){
 function(state, county, key){
   
   if (missing(key)) {
-    return(list(error="Authentication required"))
+    return(list(error="Authentication required. Did you include an API key?"))
   } else {
     if (key %in% list_of_keys) {
       
@@ -504,7 +505,7 @@ function(state, county, key){
       return(df)
       
     } else {
-      return(list(error="Authentication required"))
+      return(list(error="Authentication required. Did you include an API key?"))
     }
     
   }
@@ -523,7 +524,7 @@ function(state, county, key){
   
   
   if (missing(key)) {
-    return(list(error="Authentication required"))
+    return(list(error="Authentication required. Did you include an API key?"))
   } else {
     if (key %in% list_of_keys) {
       
@@ -552,7 +553,7 @@ function(state, county, key){
       return(df)
       
     } else {
-      return(list(error="Authentication required"))
+      return(list(error="Authentication required. Did you include an API key?"))
     }
     
   }
@@ -570,7 +571,7 @@ function(state, county, key){
 function(state, county, key){
   
   if (missing(key)) {
-    return(list(error="Authentication required"))
+    return(list(error="Authentication required. Did you put in an API key?"))
   } else {
     if (key %in% list_of_keys) {
       
@@ -609,7 +610,7 @@ function(state, county, key){
       return(county_annual)
       
     } else {
-      return(list(error="Authentication required"))
+      return(list(error="Authentication required. Did you include an API key?"))
     }
     
   }
@@ -629,7 +630,7 @@ function(state, county, key){
 function(state, county, key){
   
   if (missing(key)) {
-    return(list(error="Authentication required"))
+    return(list(error="Authentication required. Did you include an API key?"))
   } else {
     if (key %in% list_of_keys) {
       
@@ -668,7 +669,7 @@ function(state, county, key){
       return(county_monthly)
       
     } else {
-      return(list(error="Authentication required"))
+      return(list(error="Authentication required. Did you include an API key?"))
     }
     
   }
@@ -688,7 +689,7 @@ function(state, county, key){
 function(state, county, key, res){
   
   if (missing(key)) {
-    return(list(error="Authentication required"))
+    return(list(error="Authentication required. Did you include an API key?"))
   } else {
     if (key %in% list_of_keys) {
       
@@ -696,7 +697,7 @@ function(state, county, key, res){
       
       state_abb <- str_to_upper(state)
       county_name <- str_to_upper(county)
-      county_name <- gsub("-", " ", county_name)
+      #county_name <- gsub("-", " ", county_name)
       county_name <- gsub("%20", " ", county_name)
       county_relationship_file_only <- county_relationship_file %>% 
         filter(BUYER_STATE==state_abb & BUYER_COUNTY==county_name)
@@ -722,7 +723,7 @@ function(state, county, key, res){
       
       
     } else {
-      return(list(error="Authentication required"))
+      return(list(error="Authentication required. Did you include an API key?"))
     }
   }
 }
@@ -740,7 +741,7 @@ function(state, county, key, res){
 function(state, county, key, res){
   
   if (missing(key)) {
-    return(list(error="Authentication required"))
+    return(list(error="Authentication required. Did you include an API key?"))
   } else {
     if (key %in% list_of_keys) {
       
@@ -748,7 +749,7 @@ function(state, county, key, res){
       
       state_abb <- str_to_upper(state)
       county_name <- str_to_upper(county)
-      county_name <- gsub("-", " ", county_name)
+      #county_name <- gsub("-", " ", county_name)
       county_name <- gsub("%20", " ", county_name)
       county_relationship_file_only <- county_relationship_file %>% 
         filter(BUYER_STATE==state_abb & BUYER_COUNTY==county_name)
@@ -774,7 +775,7 @@ function(state, county, key, res){
       
       
     } else {
-      return(list(error="Authentication required"))
+      return(list(error="Authentication required. Did you include an API key?"))
     }
   }
 }
@@ -792,7 +793,7 @@ function(state, county, key, res){
 function(state, county, key, res){
   
   if (missing(key)) {
-    return(list(error="Authentication required"))
+    return(list(error="Authentication required. Did you include an API key?"))
   } else {
     if (key %in% list_of_keys) {
       
@@ -800,7 +801,7 @@ function(state, county, key, res){
       
       state_abb <- str_to_upper(state)
       county_name <- str_to_upper(county)
-      county_name <- gsub("-", " ", county_name)
+      #county_name <- gsub("-", " ", county_name)
       county_name <- gsub("%20", " ", county_name)
       county_relationship_file_only <- county_relationship_file %>% 
         filter(BUYER_STATE==state_abb & BUYER_COUNTY==county_name)
@@ -826,7 +827,7 @@ function(state, county, key, res){
       
       
     } else {
-      return(list(error="Authentication required"))
+      return(list(error="Authentication required. Did you include an API key?"))
     }
   }
 }
@@ -843,7 +844,7 @@ function(state, county, key, res){
 function(state, key, res){
   
   if (missing(key)) {
-    return(list(error="Authentication required"))
+    return(list(error="Authentication required. Did you include an API key?"))
   } else {
     if (key %in% list_of_keys) {
       
@@ -868,7 +869,7 @@ function(state, key, res){
       
       
     } else {
-      return(list(error="Authentication required"))
+      return(list(error="Authentication required. Did you include an API key?"))
     }
   }
 }
@@ -885,7 +886,7 @@ function(state, key, res){
 function(state, key, res){
   
   if (missing(key)) {
-    return(list(error="Authentication required"))
+    return(list(error="Authentication required. Did you include an API key?"))
   } else {
     if (key %in% list_of_keys) {
       
@@ -911,7 +912,7 @@ function(state, key, res){
       
       
     } else {
-      return(list(error="Authentication required"))
+      return(list(error="Authentication required. Did you include an API key?"))
     }
   }
 }
@@ -928,7 +929,7 @@ function(state, key, res){
 function(state, key, res){
   
   if (missing(key)) {
-    return(list(error="Authentication required"))
+    return(list(error="Authentication required. Did you include an API key?"))
   } else {
     if (key %in% list_of_keys) {
       
@@ -955,7 +956,7 @@ function(state, key, res){
       
       
     } else {
-      return(list(error="Authentication required"))
+      return(list(error="Authentication required. Did you include an API key?"))
     }
   }
 }
@@ -971,7 +972,7 @@ function(state, key, res){
 function(state, county, key){
   
   if (missing(key)) {
-    return(list(error="Authentication required"))
+    return(list(error="Authentication required. Did you include an API key?"))
   } else {
     if (key %in% list_of_keys) {
       
@@ -1010,7 +1011,7 @@ function(state, county, key){
       return(pharm_annual)
       
     } else {
-      return(list(error="Authentication required"))
+      return(list(error="Authentication required. Did you include an API key?"))
     }
     
   }
@@ -1029,10 +1030,10 @@ function(state, county, key){
 function(state, county, year, key){
   
   if (missing(key)) {
-    return(list(error="Authentication required"))
+    return(list(error="Authentication required. Did you include an API key?"))
   } else {
     if (!key %in% list_of_keys) {
-      return(list(error="Authentication required"))
+      return(list(error="Authentication required. Did you include an API key?"))
     } else {
       if (!missing(year)){
         
@@ -1086,12 +1087,11 @@ function(state, county, year, key){
 #' Returns all data as a tsv
 #' @param key Key needed to make query successful
 #' @param res Response object (leave blank)
-#' @tag raw
 #' @get /all_the_data
 function(key, res){
   
   if (missing(key)) {
-    return(list(error="Authentication required"))
+    return(list(error="Authentication required. Did you include an API key?"))
   } else {
     if (key %in% list_of_keys) {
       
@@ -1106,18 +1106,29 @@ function(key, res){
       
       
     } else {
-      return(list(error="Authentication required"))
+      return(list(error="Authentication required. Did you include an API key?"))
     }
   }
 }
 
+# #' @get /docs/
+# function() {
+# return(pr$swaggerFile());
+# }
+
 #' Health check for ALB (Part of deployment process, not part of the API)
+#' @tag z_ignore
 #' @get /healthcheck
 function() {
   return(list(message="Everything is fine."));
 }
 
 
-#pr <- plumb("plumber.R")  # Where 'plumber.R' is the location of the file shown above
-# r$run(host="0.0.0.0",port=8000)
+#* @filter cors
+cors <- function(res) {
+  res$setHeader("Access-Control-Allow-Origin", "*")
+  plumber::forward()
+}
 
+#  pr <- plumb("plumber.R")  # Where 'plumber.R' is the location of the file shown above
+#  pr$run(port=8000)
