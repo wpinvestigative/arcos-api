@@ -22,22 +22,20 @@ county_relationship_fips <- county_relationship_file %>% pull(countyfips) %>% un
 
 ### County data
 
-#' Returns all data by county as a tsv object via redirect (-L)
-#' @param res Response object (leave blank)
+#' Returns all data by county (Will be large and could take extra time to load)
 #' @param key Key needed to make query successful
 #' @param county If provided, filter the data to only this county (e.g. 'Mingo')
 #' @param state If provided, filter the data to only this state (e.g. 'WV')
-#' @serializer contentType list(type="text/tab-separated-values")
 #' @tag raw
 #' @get /v1/county_data
-function(state, county, key, res){
+function(state, county, key){
   
   if (missing(key)) {
     return(list(error="Authentication required. Did you include an API key?"))
   } else {
     if (key %in% list_of_keys) {
       
-      base_url <- "https://www.washingtonpost.com/wp-stat/dea-pain-pill-database/summary/arcos-"
+      base_url <- "https://wp-stat.s3.amazonaws.com/dea-pain-pill-database/summary/arcos-"
       
       state_abb <- str_to_upper(state)
       county_name <- str_to_upper(county)
@@ -58,11 +56,11 @@ function(state, county, key, res){
         
         url <- paste0(base_url, state_abb, "-", county_name, "-", county_fips, "-itemized.tsv")
         
-        #df <- vroom(url)
-        #return(df)
-        res$status <- 302
-        res$setHeader('Location', url)
-        return(res);
+        df <- vroom(url)
+        return(df)
+        #res$status <- 302
+        #res$setHeader('Location', url)
+        #return(res);
       }
       
       
@@ -188,21 +186,19 @@ function(state, key){
 
 ### County data via fips code
 
-#' Returns all data by county FIPS code as a tsv object via redirect (-L)
-#' @param res Response object
+#' Returns all data by county FIPS code (Will be large and could take extra time to load)
 #' @param key Key needed to make query successful
 #' @param fips If provided, filter the data to only this county (e.g. '01001' for Autauga, Alabama)
-#' @serializer contentType list(type="text/tab-separated-values")
 #' @tag raw
 #' @get /v1/county_fips_data
-function(fips, key, res){
+function(fips, key){
   
   if (missing(key)) {
     return(list(error="Authentication required. Did you include an API key?"))
   } else {
     if (key %in% list_of_keys) {
       
-      base_url <- "https://www.washingtonpost.com/wp-stat/dea-pain-pill-database/summary/arcos-"
+      base_url <- "https://wp-stat.s3.amazonaws.com/dea-pain-pill-database/summary/arcos-"
       
       #state_abb <- str_to_upper(state)
       #county_name <- str_to_upper(county)
@@ -219,12 +215,12 @@ function(fips, key, res){
         
         url <- paste0(base_url, state_abb, "-", county_name, "-", fips, "-itemized.tsv")
         
-        #df <- vroom(url)
-        # return(df)
+        df <- vroom(url)
+        return(df)
         ## instead of reading the DF locally and returning it, we'll just 302 temp. redirect users to the WWW Page
-        res$status <- 302
-        res$setHeader('Location', url);
-        return(res)
+        #res$status <- 302
+        #res$setHeader('Location', url);
+        #return(res)
       }
       
     } else {
@@ -373,11 +369,12 @@ function(state, county, key){
 
 #' Returns pharmacy core-based statistical area FIPS code
 #' @param key Key needed to make query successful
-#' @param county If provided, filter the data to only this county (e.g. 'Mingo')
-#' @param state If provided, filter the data to only this state (e.g. 'WV')
+#' @param county If geoid isn't provided, filter the data to only this county (e.g. 'Mingo')
+#' @param state If geoid isn't provided, filter the data to only this state (e.g. 'WV')
+#' @param geoid If provided, filter the data to the cbsa GEOID (e.g. '26580') 
 #' @tag supplemental
 #' @get /v1/pharmacy_cbsa
-function(state, county, key){
+function(geoid, state, county, key){
   
   if (missing(key)) {
     return(list(error="Authentication required. Did you include an API key?"))
@@ -406,6 +403,10 @@ function(state, county, key){
         }
       }
       
+      # Filter if GEOID was specified
+      if (!missing(geoid)){
+        df <- filter(df, GEOID == as.numeric(geoid))
+      }
       return(df)
       
     } else {
@@ -420,13 +421,11 @@ function(state, county, key){
 ### Pharmacy data
 
 #' Returns pharmacy list and location data as a csv object via redirect (-L)
-#' @param res Response object (leave blank)
 #' @param key Key needed to make query successful
 #' @param buyer_dea_no Required number (e.g. 'AB0454176')
-#' @serializer contentType list(type="text/tab-separated-values")
 #' @tag raw
 #' @get /v1/pharmacy_data
-function(buyer_dea_no, key, res){
+function(buyer_dea_no, key){
   
   if (missing(key)) {
     return(list(error="Authentication required. Did you include an API key?"))
@@ -442,13 +441,13 @@ function(buyer_dea_no, key, res){
         if (buyer_dea %in% dea_nos$BUYER_DEA_NO) {
           file_link <- dea_nos %>% filter(BUYER_DEA_NO == buyer_dea) %>% pull(filename)
           
-          url <- paste0("https://www.washingtonpost.com/wp-stat/dea-pain-pill-database/bulk/pharmacy/", file_link, ".csv")
-          #df <- vroom(url)
-          #return(df)
+          url <- paste0("https://wp-stat.s3.amazonaws.com/dea-pain-pill-database/bulk/pharmacy/", file_link, ".csv")
+          df <- vroom(url)
+          return(df)
           
-          res$status <- 302
-          res$setHeader('Location', url)
-          return(res);
+          #res$status <- 302
+          #res$setHeader('Location', url)
+          #return(res);
           
           
         } else {
@@ -682,22 +681,20 @@ function(state, county, key){
 
 ### Total pills for each pharmacy in a county
 
-#' Returns all pharmacy totals by county as a tsv object via redirect (-L)
-#' @param res Response object (leave blank)
+#' Returns all pharmacy totals by county (Will be large and could take extra time to load)
 #' @param key Key needed to make query successful
 #' @param county If provided, filter the data to only this county (e.g. 'Mingo')
 #' @param state If provided, filter the data to only this state (e.g. 'WV')
-#' @serializer contentType list(type="text/tab-separated-values")
 #' @tag summary
 #' @get /v1/total_pharmacies_county
-function(state, county, key, res){
+function(state, county, key){
   
   if (missing(key)) {
     return(list(error="Authentication required. Did you include an API key?"))
   } else {
     if (key %in% list_of_keys) {
       
-      base_url <- "https://www.washingtonpost.com/wp-stat/dea-pain-pill-database/summary/arcos-"
+      base_url <- "https://wp-stat.s3.amazonaws.com/dea-pain-pill-database/summary/arcos-"
       
       state_abb <- str_to_upper(state)
       county_name <- str_to_upper(county)
@@ -718,11 +715,11 @@ function(state, county, key, res){
         
         url <- paste0(base_url, state_abb, "-", county_name, "-", county_fips, "-pharmacy.tsv")
         
-        #df <- vroom(url)
-        #return(df)
-        res$status <- 302
-        res$setHeader('Location', url)
-        return(res);
+        df <- vroom(url)
+        return(df)
+        #res$status <- 302
+        #res$setHeader('Location', url)
+        #return(res);
       }
       
       
@@ -735,22 +732,20 @@ function(state, county, key, res){
 
 ### Total pills for each Manufacturer to a county
 
-#' Returns all Manufacturer totals by county as a tsv object via redirect (-L)
-#' @param res Response object (leave blank)
+#' Returns all Manufacturer totals by county (Will be large and could take extra time to load)
 #' @param key Key needed to make query successful
 #' @param county If provided, filter the data to only this county (e.g. 'Mingo')
 #' @param state If provided, filter the data to only this state (e.g. 'WV')
-#' @serializer contentType list(type="text/tab-separated-values")
 #' @tag summary
 #' @get /v1/total_manufacturers_county
-function(state, county, key, res){
+function(state, county, key){
   
   if (missing(key)) {
     return(list(error="Authentication required. Did you include an API key?"))
   } else {
     if (key %in% list_of_keys) {
       
-      base_url <- "https://www.washingtonpost.com/wp-stat/dea-pain-pill-database/summary/arcos-"
+      base_url <- "https://wp-stat.s3.amazonaws.com/dea-pain-pill-database/summary/arcos-"
       
       state_abb <- str_to_upper(state)
       county_name <- str_to_upper(county)
@@ -771,11 +766,11 @@ function(state, county, key, res){
         
         url <- paste0(base_url, state_abb, "-", county_name, "-", county_fips, "-labeler.tsv")
         
-        #df <- vroom(url)
-        #return(df)
-        res$status <- 302
-        res$setHeader('Location', url)
-        return(res);
+        df <- vroom(url)
+        return(df)
+        #res$status <- 302
+        #res$setHeader('Location', url)
+        #return(res);
       }
       
       
@@ -788,22 +783,20 @@ function(state, county, key, res){
 
 ### Total pills for each Distributor to a county
 
-#' Returns all Distributor totals by county as a tsv object via redirect (-L)
-#' @param res Response object (leave blank)
+#' Returns all Distributor totals by county (Will be large and could take extra time to load)
 #' @param key Key needed to make query successful
 #' @param county If provided, filter the data to only this county (e.g. 'Mingo')
 #' @param state If provided, filter the data to only this state (e.g. 'WV')
-#' @serializer contentType list(type="text/tab-separated-values")
 #' @tag summary
 #' @get /v1/total_distributors_county
-function(state, county, key, res){
+function(state, county, key){
   
   if (missing(key)) {
     return(list(error="Authentication required. Did you include an API key?"))
   } else {
     if (key %in% list_of_keys) {
       
-      base_url <- "https://www.washingtonpost.com/wp-stat/dea-pain-pill-database/summary/arcos-"
+      base_url <- "https://wp-stat.s3.amazonaws.com/dea-pain-pill-database/summary/arcos-"
       
       state_abb <- str_to_upper(state)
       county_name <- str_to_upper(county)
@@ -824,11 +817,11 @@ function(state, county, key, res){
         
         url <- paste0(base_url, state_abb, "-", county_name, "-", county_fips, "-distributor.tsv")
         
-        #df <- vroom(url)
-        #return(df)
-        res$status <- 302
-        res$setHeader('Location', url)
-        return(res);
+        df <- vroom(url)
+        return(df)
+        #res$status <- 302
+        #res$setHeader('Location', url)
+        #return(res);
       }
       
       
@@ -841,21 +834,19 @@ function(state, county, key, res){
 
 ### Total pills for each pharmacy in a state
 
-#' Returns all pharmacy totals by state as a tsv object via redirect (-L)
-#' @param res Response object (leave blank)
+#' Returns all pharmacy totals by state (Will be large and could take extra time to load)
 #' @param key Key needed to make query successful
 #' @param state If provided, filter the data to only this state (e.g. 'WV')
-#' @serializer contentType list(type="text/tab-separated-values")
 #' @tag summary
 #' @get /v1/total_pharmacies_state
-function(state, key, res){
+function(state, key){
   
   if (missing(key)) {
     return(list(error="Authentication required. Did you include an API key?"))
   } else {
     if (key %in% list_of_keys) {
       
-      base_url <- "https://www.washingtonpost.com/wp-stat/dea-pain-pill-database/summary/arcos-"
+      base_url <- "https://wp-stat.s3.amazonaws.com/dea-pain-pill-database/summary/arcos-"
       
       state_abb <- str_to_upper(state)
       if (!state_abb %in% county_relationship_states) {
@@ -867,11 +858,11 @@ function(state, key, res){
         
         url <- paste0(base_url, state_abb, "-county-pharmacy.tsv")
         
-        #df <- vroom(url)
-        #return(df)
-        res$status <- 302
-        res$setHeader('Location', url)
-        return(res);
+        df <- vroom(url)
+        return(df)
+        #res$status <- 302
+        #res$setHeader('Location', url)
+        #return(res);
       }
       
       
@@ -884,21 +875,19 @@ function(state, key, res){
 
 ### Total pills for each Manufacturer to a state
 
-#' Returns all Manufacturer totals by state as a tsv object via redirect (-L)
-#' @param res Response object (leave blank)
+#' Returns all Manufacturer totals by state (Will be large and could take extra time to load)
 #' @param key Key needed to make query successful
 #' @param state If provided, filter the data to only this state (e.g. 'WV')
-#' @serializer contentType list(type="text/tab-separated-values")
 #' @tag summary
 #' @get /v1/total_manufacturers_state
-function(state, key, res){
+function(state, key){
   
   if (missing(key)) {
     return(list(error="Authentication required. Did you include an API key?"))
   } else {
     if (key %in% list_of_keys) {
       
-      base_url <- "https://www.washingtonpost.com/wp-stat/dea-pain-pill-database/summary/arcos-"
+      base_url <- "https://wp-stat.s3.amazonaws.com/dea-pain-pill-database/summary/arcos-"
       
       state_abb <- str_to_upper(state)
       
@@ -911,11 +900,11 @@ function(state, key, res){
         
         url <- paste0(base_url, state_abb, "-county-labeler.tsv")
         
-        #df <- vroom(url)
-        #return(df)
-        res$status <- 302
-        res$setHeader('Location', url)
-        return(res);
+        df <- vroom(url)
+        return(df)
+        #res$status <- 302
+        #res$setHeader('Location', url)
+        #return(res);
       }
       
       
@@ -928,21 +917,19 @@ function(state, key, res){
 
 ### Total pills for each Distributor to a state
 
-#' Returns all Distributor totals by state as a tsv object via redirect (-L)
-#' @param res Response object (leave blank)
+#' Returns all Distributor totals by state (Will be large and could take extra time to load)
 #' @param key Key needed to make query successful
 #' @param state If provided, filter the data to only this state (e.g. 'WV')
-#' @serializer contentType list(type="text/tab-separated-values")
 #' @tag summary
 #' @get /v1/total_distributors_state
-function(state, key, res){
+function(state, key){
   
   if (missing(key)) {
     return(list(error="Authentication required. Did you include an API key?"))
   } else {
     if (key %in% list_of_keys) {
       
-      base_url <- "https://www.washingtonpost.com/wp-stat/dea-pain-pill-database/summary/arcos-"
+      base_url <- "https://wp-stat.s3.amazonaws.com/dea-pain-pill-database/summary/arcos-"
       
       state_abb <- str_to_upper(state)
       
@@ -956,11 +943,11 @@ function(state, key, res){
         
         url <- paste0(base_url, state_abb, "-county-distributor.tsv")
         
-        #df <- vroom(url)
-        #return(df)
-        res$status <- 302
-        res$setHeader('Location', url)
-        return(res);
+        df <- vroom(url)
+        return(df)
+        #res$status <- 302
+        #res$setHeader('Location', url)
+        #return(res);
       }
       
       
