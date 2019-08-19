@@ -22,13 +22,14 @@ county_relationship_fips <- county_relationship_file %>% pull(countyfips) %>% un
 
 ### County data
 
-#' Returns all data by county as a tsv
-#' @param state If provided, filter the data to only this state (e.g. 'WV')
-#' @param county If provided, filter the data to only this county (e.g. 'Mingo')
-#' @param key Key needed to make query successful
+#' Returns all data by county as a tsv object via redirect (-L)
 #' @param res Response object (leave blank)
+#' @param key Key needed to make query successful
+#' @param county If provided, filter the data to only this county (e.g. 'Mingo')
+#' @param state If provided, filter the data to only this state (e.g. 'WV')
+#' @serializer contentType list(type="text/tab-separated-values")
 #' @tag raw
-#' @get /county_data
+#' @get /v1/county_data
 function(state, county, key, res){
   
   if (missing(key)) {
@@ -75,11 +76,11 @@ function(state, county, key, res){
 ### County populations
 
 #' Returns historical county population data
-#' @param state If provided, filter the data to only this state (e.g. 'WV')
-#' @param county If provided, filter the data to only this county (e.g. 'Mingo')
 #' @param key Key needed to make query successful
+#' @param county If provided, filter the data to only this county (e.g. 'Mingo')
+#' @param state If provided, filter the data to only this state (e.g. 'WV')
 #' @tag supplemental
-#' @get /county_population
+#' @get /v1/county_population
 function(state, county, key){
   
   
@@ -126,7 +127,7 @@ function(state, county, key){
 #' Returns list of 330+ BUYER_DEA_NOs that we've identified as mail order or hospitals and not retail or chain pharmacies
 #' @param key Key needed to make query successful
 #' @tag supplemental
-#' @get /not_pharmacies
+#' @get /v1/not_pharmacies
 function(key){
   
   
@@ -151,10 +152,10 @@ function(key){
 ### County populations
 
 #' Returns historical statepopulation data
-#' @param state If provided, filter the data to only this state (e.g. 'WV')
 #' @param key Key needed to make query successful
+#' @param state If provided, filter the data to only this state (e.g. 'WV')
 #' @tag supplemental
-#' @get /state_population
+#' @get /v1/state_population
 function(state, key){
   
   
@@ -187,12 +188,13 @@ function(state, key){
 
 ### County data via fips code
 
-#' Returns all data by county FIPS code as a tsv
-#' @param fips If provided, filter the data to only this county (e.g. '01001' for Autauga, Alabama)
-#' @param key Key needed to make query successful
+#' Returns all data by county FIPS code as a tsv object via redirect (-L)
 #' @param res Response object
+#' @param key Key needed to make query successful
+#' @param fips If provided, filter the data to only this county (e.g. '01001' for Autauga, Alabama)
+#' @serializer contentType list(type="text/tab-separated-values")
 #' @tag raw
-#' @get /county_fips_data
+#' @get /v1/county_fips_data
 function(fips, key, res){
   
   if (missing(key)) {
@@ -236,10 +238,10 @@ function(fips, key, res){
 
 #' Returns pharmacy latitude and longitude data
 #' @param key Key needed to make query successful
-#' @param state If provided, filter the data to only this state (e.g. 'WV')
 #' @param county If provided, filter the data to only this county (e.g. 'Mingo')
+#' @param state If provided, filter the data to only this state (e.g. 'WV')
 #' @tag supplemental
-#' @get /pharmacy_latlon
+#' @get /v1/pharmacy_latlon
 function(state, county, key){
   
   if (missing(key)) {
@@ -281,10 +283,10 @@ function(state, county, key){
 
 #' Returns pharmacy county FIPS id number
 #' @param key Key needed to make query successful
-#' @param state If provided, filter the data to only this state (e.g. 'WV')
 #' @param county If provided, filter the data to only this county (e.g. 'Mingo')
+#' @param state If provided, filter the data to only this state (e.g. 'WV')
 #' @tag supplemental
-#' @get /pharmacy_counties
+#' @get /v1/pharmacy_counties
 function(state, county, key){
   
   if (missing(key)) {
@@ -326,10 +328,10 @@ function(state, county, key){
 
 #' Returns pharmacy census tracts FIPS code
 #' @param key Key needed to make query successful
-#' @param state If provided, filter the data to only this state (e.g. 'WV')
 #' @param county If provided, filter the data to only this county (e.g. 'Mingo')
+#' @param state If provided, filter the data to only this state (e.g. 'WV')
 #' @tag supplemental
-#' @get /pharmacy_tracts
+#' @get /v1/pharmacy_tracts
 function(state, county, key){
   
   if (missing(key)) {
@@ -371,10 +373,10 @@ function(state, county, key){
 
 #' Returns pharmacy core-based statistical area FIPS code
 #' @param key Key needed to make query successful
-#' @param state If provided, filter the data to only this state (e.g. 'WV')
 #' @param county If provided, filter the data to only this county (e.g. 'Mingo')
+#' @param state If provided, filter the data to only this state (e.g. 'WV')
 #' @tag supplemental
-#' @get /pharmacy_cbsa
+#' @get /v1/pharmacy_cbsa
 function(state, county, key){
   
   if (missing(key)) {
@@ -417,12 +419,13 @@ function(state, county, key){
 
 ### Pharmacy data
 
-#' Returns pharmacy list and location data
+#' Returns pharmacy list and location data as a csv object via redirect (-L)
+#' @param res Response object (leave blank)
 #' @param key Key needed to make query successful
 #' @param buyer_dea_no Required number (e.g. 'AB0454176')
-#' @param res Response object (leave blank)
+#' @serializer contentType list(type="text/tab-separated-values")
 #' @tag raw
-#' @get /pharmacy_data
+#' @get /v1/pharmacy_data
 function(buyer_dea_no, key, res){
   
   if (missing(key)) {
@@ -469,10 +472,10 @@ function(buyer_dea_no, key, res){
 
 #' Returns buyer details (mail order, pharmacy, retail, practitioner, etc) 
 #' @param key Key needed to make query successful
-#' @param state If provided, filter the data to only this state (e.g. 'WV')
 #' @param county If provided, filter the data to only this county (e.g. 'Mingo')
+#' @param state If provided, filter the data to only this state (e.g. 'WV')
 #' @tag raw
-#' @get /buyer_details
+#' @get /v1/buyer_details
 function(state, county, key){
   
   if (missing(key)) {
@@ -516,10 +519,10 @@ function(state, county, key){
 
 #' Returns Reporter (Manufacturers and Distributors) details such as addresses
 #' @param key Key needed to make query successful
-#' @param state If provided, filter the data to only this state (e.g. 'WV')
 #' @param county If provided, filter the data to only this county (e.g. 'Mingo')
+#' @param state If provided, filter the data to only this state (e.g. 'WV')
 #' @tag raw
-#' @get /reporter_details
+#' @get /v1/reporter_details
 function(state, county, key){
   
   
@@ -564,10 +567,10 @@ function(state, county, key){
 
 #' Returns seller details such as addresses
 #' @param key Key needed to make query successful
-#' @param state If provided, filter the data to only this state (e.g. 'WV')
 #' @param county If provided, filter the data to only this county (e.g. 'Mingo')
+#' @param state If provided, filter the data to only this state (e.g. 'WV')
 #' @tag summary
-#' @get /combined_county_annual
+#' @get /v1/combined_county_annual
 function(state, county, key){
   
   if (missing(key)) {
@@ -595,7 +598,7 @@ function(state, county, key){
       if (!missing(county)) {
         
         county <- str_to_upper(county)
-        county <- gsub("-", " ", county)
+        #county <- gsub("-", " ", county)
         county <- gsub("%20", " ", county)
         if (county %in% county_relationship_counties) {
           county_annual <- filter(county_annual, BUYER_COUNTY==county)
@@ -623,10 +626,10 @@ function(state, county, key){
 
 #' Returns seller details such as addresses
 #' @param key Key needed to make query successful
-#' @param state If provided, filter the data to only this state (e.g. 'WV')
 #' @param county If provided, filter the data to only this county (e.g. 'Mingo')
+#' @param state If provided, filter the data to only this state (e.g. 'WV')
 #' @tag summary
-#' @get /combined_county_monthly
+#' @get /v1/combined_county_monthly
 function(state, county, key){
   
   if (missing(key)) {
@@ -654,7 +657,7 @@ function(state, county, key){
       if (!missing(county)) {
         
         county <- str_to_upper(county)
-        county <- gsub("-", " ", county)
+        #county <- gsub("-", " ", county)
         county <- gsub("%20", " ", county)
         if (county %in% county_relationship_counties) {
           county_monthly <- filter(county_monthly, BUYER_COUNTY==county)
@@ -679,13 +682,14 @@ function(state, county, key){
 
 ### Total pills for each pharmacy in a county
 
-#' Returns all pharmacy totals by county as a tsv
-#' @param state If provided, filter the data to only this state (e.g. 'WV')
-#' @param county If provided, filter the data to only this county (e.g. 'Mingo')
-#' @param key Key needed to make query successful
+#' Returns all pharmacy totals by county as a tsv object via redirect (-L)
 #' @param res Response object (leave blank)
+#' @param key Key needed to make query successful
+#' @param county If provided, filter the data to only this county (e.g. 'Mingo')
+#' @param state If provided, filter the data to only this state (e.g. 'WV')
+#' @serializer contentType list(type="text/tab-separated-values")
 #' @tag summary
-#' @get /total_pharmacies_county
+#' @get /v1/total_pharmacies_county
 function(state, county, key, res){
   
   if (missing(key)) {
@@ -731,13 +735,14 @@ function(state, county, key, res){
 
 ### Total pills for each Manufacturer to a county
 
-#' Returns all Manufacturer totals by county as a tsv
-#' @param state If provided, filter the data to only this state (e.g. 'WV')
-#' @param county If provided, filter the data to only this county (e.g. 'Mingo')
-#' @param key Key needed to make query successful
+#' Returns all Manufacturer totals by county as a tsv object via redirect (-L)
 #' @param res Response object (leave blank)
+#' @param key Key needed to make query successful
+#' @param county If provided, filter the data to only this county (e.g. 'Mingo')
+#' @param state If provided, filter the data to only this state (e.g. 'WV')
+#' @serializer contentType list(type="text/tab-separated-values")
 #' @tag summary
-#' @get /total_manufacturers_county
+#' @get /v1/total_manufacturers_county
 function(state, county, key, res){
   
   if (missing(key)) {
@@ -783,13 +788,14 @@ function(state, county, key, res){
 
 ### Total pills for each Distributor to a county
 
-#' Returns all Distributor totals by county as a tsv
-#' @param state If provided, filter the data to only this state (e.g. 'WV')
-#' @param county If provided, filter the data to only this county (e.g. 'Mingo')
-#' @param key Key needed to make query successful
+#' Returns all Distributor totals by county as a tsv object via redirect (-L)
 #' @param res Response object (leave blank)
+#' @param key Key needed to make query successful
+#' @param county If provided, filter the data to only this county (e.g. 'Mingo')
+#' @param state If provided, filter the data to only this state (e.g. 'WV')
+#' @serializer contentType list(type="text/tab-separated-values")
 #' @tag summary
-#' @get /total_distributors_county
+#' @get /v1/total_distributors_county
 function(state, county, key, res){
   
   if (missing(key)) {
@@ -835,12 +841,13 @@ function(state, county, key, res){
 
 ### Total pills for each pharmacy in a state
 
-#' Returns all pharmacy totals by state as a tsv
-#' @param state If provided, filter the data to only this state (e.g. 'WV')
-#' @param key Key needed to make query successful
+#' Returns all pharmacy totals by state as a tsv object via redirect (-L)
 #' @param res Response object (leave blank)
+#' @param key Key needed to make query successful
+#' @param state If provided, filter the data to only this state (e.g. 'WV')
+#' @serializer contentType list(type="text/tab-separated-values")
 #' @tag summary
-#' @get /total_pharmacies_state
+#' @get /v1/total_pharmacies_state
 function(state, key, res){
   
   if (missing(key)) {
@@ -877,12 +884,13 @@ function(state, key, res){
 
 ### Total pills for each Manufacturer to a state
 
-#' Returns all Manufacturer totals by state as a tsv
-#' @param state If provided, filter the data to only this state (e.g. 'WV')
-#' @param key Key needed to make query successful
+#' Returns all Manufacturer totals by state as a tsv object via redirect (-L)
 #' @param res Response object (leave blank)
+#' @param key Key needed to make query successful
+#' @param state If provided, filter the data to only this state (e.g. 'WV')
+#' @serializer contentType list(type="text/tab-separated-values")
 #' @tag summary
-#' @get /total_manufacturers_state
+#' @get /v1/total_manufacturers_state
 function(state, key, res){
   
   if (missing(key)) {
@@ -920,12 +928,13 @@ function(state, key, res){
 
 ### Total pills for each Distributor to a state
 
-#' Returns all Distributor totals by state as a tsv
-#' @param state If provided, filter the data to only this state (e.g. 'WV')
-#' @param key Key needed to make query successful
+#' Returns all Distributor totals by state as a tsv object via redirect (-L)
 #' @param res Response object (leave blank)
+#' @param key Key needed to make query successful
+#' @param state If provided, filter the data to only this state (e.g. 'WV')
+#' @serializer contentType list(type="text/tab-separated-values")
 #' @tag summary
-#' @get /total_distributors_state
+#' @get /v1/total_distributors_state
 function(state, key, res){
   
   if (missing(key)) {
@@ -965,10 +974,10 @@ function(state, key, res){
 
 #' Returns summarized annual dosages of pharmacies and practitioners by state and county
 #' @param key Key needed to make query successful
-#' @param state If provided, filter the data to only this state (e.g. 'WV')
 #' @param county If provided, filter the data to only this county (e.g. 'Mingo')
+#' @param state If provided, filter the data to only this state (e.g. 'WV')
 #' @tag summary
-#' @get /combined_buyer_annual
+#' @get /v1/combined_buyer_annual
 function(state, county, key){
   
   if (missing(key)) {
@@ -1022,11 +1031,11 @@ function(state, county, key){
 
 #' Returns dosages by pharmacy or practitioner by county, state, and year
 #' @param key Key needed to make query successful
-#' @param state If provided, filter the data to only this state (e.g. 'WV')
-#' @param county If provided, filter the data to only this county (e.g. 'Mingo')
 #' @param year Filter the data to only this year (e.g. 2009)
+#' @param county If provided, filter the data to only this county (e.g. 'Mingo')
+#' @param state If provided, filter the data to only this state (e.g. 'WV')
 #' @tag summary
-#' @get /combined_buyer_monthly
+#' @get /v1/combined_buyer_monthly
 function(state, county, year, key){
   
   if (missing(key)) {
@@ -1084,10 +1093,12 @@ function(state, county, year, key){
 
 ### All Raw
 
-#' Returns all data as a tsv
-#' @param key Key needed to make query successful
+#' Returns all data as a tsv.gz object via redirect (-L)
 #' @param res Response object (leave blank)
-#' @get /all_the_data
+#' @param key Key needed to make query successful
+#' @serializer contentType list(type="text/tab-separated-values")
+#' @tag raw
+#' @get /v1/all_the_data
 function(key, res){
   
   if (missing(key)) {
@@ -1111,7 +1122,7 @@ function(key, res){
   }
 }
 
-# #' @get /docs/
+# #' @get /v1/docs/
 # function() {
 # return(pr$swaggerFile());
 # }
@@ -1127,8 +1138,12 @@ function() {
 #* @filter cors
 cors <- function(res) {
   res$setHeader("Access-Control-Allow-Origin", "*")
+  res$setHeader("Access-Control-Allow-Methods", "GET")
+  res$setHeader("Access-Control-Allow-Headers", "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Content-Range,Range")
   plumber::forward()
 }
 
-#  pr <- plumb("plumber.R")  # Where 'plumber.R' is the location of the file shown above
-#  pr$run(port=8000)
+
+#pr <- plumb("plumber.R")  # Where 'plumber.R' is the location of the file shown above
+# r$run(host="0.0.0.0",port=8000)
+
