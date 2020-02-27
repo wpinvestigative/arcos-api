@@ -1,5 +1,5 @@
 ﻿ColumnName,Description
-REPORTER_DEA_NO,"Unique id of entity reporting shipments to DEA. Reporters must have unique id for each facility, so some repoerters have multiple ids."
+REPORTER_DEA_NO,"Unique id of entity reporting shipments to DEA. Reporters must have unique id for each facility, so some reporters have multiple ids."
 REPORTER_BUS_ACT,"Type of business the reporter does, typically distributors or manufacturers."
 REPORTER_NAME,Name of entity reporting shipments to the DEA.
 REPORTER_ADDL_CO_INFO,Additional company information for entity reporting shipments to the DEA.
