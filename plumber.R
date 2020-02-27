@@ -20,6 +20,9 @@ county_relationship_states <- county_relationship_file %>% pull(BUYER_STATE) %>%
 county_relationship_counties <- county_relationship_file %>% pull(BUYER_COUNTY) %>% unique()
 county_relationship_fips <- county_relationship_file %>% pull(countyfips) %>% unique()
 
+drug_types <- read_csv(paste0("data/drug_names.csv")) %>% pull(DRUG_NAME)
+
+
 ### County data
 
 #' Returns all data by county (Will be large and could take extra time to load)
@@ -71,6 +74,66 @@ function(state, county, key){
 }
 
 
+### County data by individual drug
+
+#' Returns all data by county (Will be large and could take extra time to load)
+#' @param key Key needed to make query successful
+#' @param county If provided, filter the data to only this county (e.g. 'Mingo')
+#' @param state If provided, filter the data to only this state (e.g. 'WV')
+#' @param drug If provided, filter the data to only this drug (e.g. 'OXYCODONE')
+#' @tag raw
+#' @get /v1/county_data_drug
+function(state, county, drug, key){
+  
+  if (missing(key)) {
+    return(list(error="Authentication required. Did you include an API key?"))
+  } else {
+    if (key %in% list_of_keys) {
+      
+      base_url <- "https://wp-stat.s3.amazonaws.com/dea-pain-pill-database/drugs/ARCOS-"
+      
+      state_abb <- str_to_upper(state)
+      county_name <- str_to_upper(county)
+      #county_name <- gsub("-", " ", county_name)
+      county_name <- gsub("%20", " ", county_name)
+      county_relationship_file_only <- county_relationship_file %>% 
+        filter(BUYER_STATE==state_abb & BUYER_COUNTY==county_name)
+      
+      if (!state_abb %in% county_relationship_states | !county_name %in% county_relationship_counties) {
+        return(list(error="No such place. Do you have the county or state name spelled right? https://www.washingtonpost.com/graphics/2019/investigations/dea-pain-pill-database/#download-resources"))
+        
+      } else {
+        
+        if (!missing(drug) & str_to_upper(drug) %in% drug_types) { 
+        
+          
+        county_fips <- county_relationship_file_only %>% pull(countyfips)
+        
+        state_abb <- str_to_upperr(state_abb)
+        county_name <- str_to_upper(county_name)
+        county_name <- gsub(" ", "-", county_name)
+        drug_lookup <- str_to_upper(gsub(", ", "-", drug))
+        
+        url <- paste0(base_url, drug_lookup, "-", state_abb, "-", county_name, "-", county_fips, "-ITEMIZED.CSV")
+        
+        df <- vroom(url)
+        return(df)
+        #res$status <- 302
+        #res$setHeader('Location', url)
+        #return(res);
+        } else {
+          return(list(error="Drug name missing. Use the drug_list() function to see the options."))
+          
+        }
+      }
+      
+      
+    } else {
+      return(list(error="Authentication required. Did you include an API key?"))
+    }
+  }
+}
+
 ### County populations
 
 #' Returns historical county population data
@@ -87,7 +150,8 @@ function(state, county, key){
   } else {
     if (key %in% list_of_keys) {
       
-      df <- read_csv("data/pop_counties_20062012.csv")
+#      df <- read_csv("data/pop_counties_20062012.csv")
+      df <- read_csv("data/pop_counties_20062014.csv")
       
       # Filter if the state was specified
       if (!missing(state)){
@@ -147,7 +211,7 @@ function(key){
 }
 
 
-### County populations
+### State populations
 
 #' Returns historical statepopulation data
 #' @param key Key needed to make query successful
@@ -162,7 +226,7 @@ function(state, key){
   } else {
     if (key %in% list_of_keys) {
       
-      df <- read_csv("data/pop_states_20062012.csv")
+      df <- read_csv("data/pop_states_20062014.csv")
       
       # Filter if the state was specified
       if (!missing(state)){
@@ -245,7 +309,7 @@ function(state, county, key){
   } else {
     if (key %in% list_of_keys) {
       
-      df <- read_csv("data/pharmacies_latlon.csv")
+      df <- read_csv("data/pharmacies_latlon14.csv")
       
       # Filter if the state was specified
       if (!missing(state)){
@@ -290,7 +354,7 @@ function(state, county, key){
   } else {
     if (key %in% list_of_keys) {
       
-      df <- read_csv("data/pharmacies_counties.csv")
+      df <- read_csv("data/pharmacies_counties14.csv")
       
       # Filter if the state was specified
       if (!missing(state)){
@@ -335,7 +399,7 @@ function(state, county, key){
   } else {
     if (key %in% list_of_keys) {
       
-      df <- read_csv("data/pharmacies_tracts.csv")
+      df <- read_csv("data/pharmacies_tracts14.csv")
       
       # Filter if the state was specified
       if (!missing(state)){
@@ -381,7 +445,7 @@ function(geoid, state, county, key){
   } else {
     if (key %in% list_of_keys) {
       
-      df <- read_csv("data/pharmacies_cbsa.csv")
+      df <- read_csv("data/pharmacies_cbsa14.csv")
       
       # Filter if the state was specified
       if (!missing(state)){
@@ -432,7 +496,7 @@ function(buyer_dea_no, key){
   } else {
     if (key %in% list_of_keys) {
       
-      dea_nos <- read_csv("data/pharmacies_dea_nos.csv")
+      dea_nos <- read_csv("data/pharmacies_dea_nos14.csv")
       
       if (!missing(buyer_dea_no)) {
         
@@ -482,7 +546,7 @@ function(state, county, key){
   } else {
     if (key %in% list_of_keys) {
       
-      df <- read_csv("data/detail_list_buyers.csv")
+      df <- read_csv("data/detail_list_buyers14.csv")
       
       # Filter if the state was specified
       if (!missing(state)){
@@ -530,7 +594,7 @@ function(state, county, key){
   } else {
     if (key %in% list_of_keys) {
       
-      df <- read_csv("data/detail_list_reporters.csv")
+      df <- read_csv("data/detail_list_reporters14.csv")
       
       # Filter if the state was specified
       if (!missing(state)){
@@ -564,7 +628,7 @@ function(state, county, key){
 
 ### Annual county dosages
 
-#' Returns seller details such as addresses
+#' Returns total pharmacy and practitioner pill counts by county and year
 #' @param key Key needed to make query successful
 #' @param county If provided, filter the data to only this county (e.g. 'Mingo')
 #' @param state If provided, filter the data to only this state (e.g. 'WV')
@@ -577,7 +641,7 @@ function(state, county, key){
   } else {
     if (key %in% list_of_keys) {
       
-      county_annual <- read_csv("data/county_annual.csv")
+      county_annual <- read_csv("data/county_annual14.csv")
       
       if (!missing(state)) {
         
@@ -623,7 +687,7 @@ function(state, county, key){
 
 ### Monthly county dosages
 
-#' Returns seller details such as addresses
+#' Returns total pharmacy and practitioner pill counts by county and month
 #' @param key Key needed to make query successful
 #' @param county If provided, filter the data to only this county (e.g. 'Mingo')
 #' @param state If provided, filter the data to only this state (e.g. 'WV')
@@ -636,7 +700,7 @@ function(state, county, key){
   } else {
     if (key %in% list_of_keys) {
       
-      county_monthly <- read_csv("data/county_monthly.csv")
+      county_monthly <- read_csv("data/county_monthly14.csv")
       
       if (!missing(state)) {
         
@@ -972,7 +1036,7 @@ function(state, county, key){
   } else {
     if (key %in% list_of_keys) {
       
-      pharm_annual <- read_csv("data/buyer_annual.csv")
+      pharm_annual <- read_csv("data/buyer_annual14.csv")
       
       if (!missing(state)) {
         
@@ -1033,7 +1097,7 @@ function(state, county, year, key){
     } else {
       if (!missing(year)){
         
-        if (as.numeric(year) <= 2012 & as.numeric(year) >=2006) {
+        if (as.numeric(year) <= 2014 & as.numeric(year) >=2006) {
           
           pharm_monthly <- read_csv(paste0("data/buyer_monthly", year, ".csv"))
           
@@ -1068,7 +1132,7 @@ function(state, county, year, key){
             
           } 
         } else {
-          return(list(error="Only data between 2006 and 2012 currently available"))
+          return(list(error="Only data between 2006 and 2014 currently available"))
         }
       } else {
         return(list(error="Year needed"))
@@ -1076,6 +1140,157 @@ function(state, county, year, key){
     } 
   }
 } 
+
+### County list
+
+#' Returns simple dataframe of counties and fips codes that are represented in the ARCOS data
+#' Leave out county and state variables to pull entire country list
+#' @param key Key needed to make query successful
+#' @param county If provided, filter the data to only this county (e.g. 'Mingo')
+#' @param state If provided, filter the data to only this state (e.g. 'WV')
+#' @tag supplemental
+#' @get /v1/county_list
+function(state, county, key){
+  
+  if (missing(key)) {
+    return(list(error="Authentication required. Did you include an API key?"))
+  } else {
+    if (key %in% list_of_keys) {
+      
+      county_download <- county_relationship_file
+      
+      if (!missing(state)) {
+        
+        state <- str_to_upper(state)
+        
+        if (state %in% county_relationship_states) {
+          county_download <- filter(county_download, BUYER_STATE==state)
+          
+        } else {
+          return(list(error="State abbreviation not found"))
+          
+        }
+        
+      }
+      
+      
+      if (!missing(county)) {
+        
+        county <- str_to_upper(county)
+        county <- gsub("-", " ", county)
+        county <- gsub("%20", " ", county)
+        if (county %in% county_relationship_counties) {
+          county_download <- filter(county_download, BUYER_COUNTY==county)
+          
+        } else {
+          return(list(error="County not found"))
+          
+        }
+        
+      }
+      
+      return(county_download)
+      
+    } else {
+      return(list(error="Authentication required. Did you include an API key?"))
+    }
+    
+  }
+  
+}
+
+
+### Monthly pharmacy dosages
+
+#' Returns dosages by pharmacy or practitioner by county, state, and year
+#' @param key Key needed to make query successful
+#' @param year Filter the data to only this year (e.g. 2009)
+#' @param county If provided, filter the data to only this county (e.g. 'Mingo')
+#' @param state If provided, filter the data to only this state (e.g. 'WV')
+#' @tag summary
+#' @get /v1/combined_buyer_monthly
+function(state, county, year, key){
+  
+  if (missing(key)) {
+    return(list(error="Authentication required. Did you include an API key?"))
+  } else {
+    if (!key %in% list_of_keys) {
+      return(list(error="Authentication required. Did you include an API key?"))
+    } else {
+      if (!missing(year)){
+        
+        if (as.numeric(year) <= 2014 & as.numeric(year) >=2006) {
+          
+          pharm_monthly <- read_csv(paste0("data/buyer_monthly", year, ".csv"))
+          
+          if (!missing(state)) {
+            
+            state <- str_to_upper(state)
+            
+            if (state %in% county_relationship_states) {
+              pharm_monthly <- filter(pharm_monthly, BUYER_STATE==state)
+              
+            } else {
+              return(list(error="State abbreviation not found"))
+              
+            }
+            
+          }
+          
+          
+          if (!missing(county)) {
+            
+            county <- str_to_upper(county)
+            county <- gsub("-", " ", county)
+            county <- gsub("%20", " ", county)
+            if (county %in% county_relationship_counties) {
+              pharm_monthly <- filter(pharm_monthly, BUYER_COUNTY==county)
+              
+            } else {
+              return(list(error="County not found"))
+              
+            }
+            return(pharm_monthly)
+            
+          } 
+        } else {
+          return(list(error="Only data between 2006 and 2014 currently available"))
+        }
+      } else {
+        return(list(error="Year needed"))
+      }
+    } 
+  }
+} 
+
+
+### Drug list
+
+#' Returns simple dataframe of drugs tracked in the ARCOS database
+#' @param key Key needed to make query successful
+#' @tag raw
+#' @get /v1/drug_list
+function(key){
+  
+  if (missing(key)) {
+    return(list(error="Authentication required. Did you include an API key?"))
+  } else {
+    if (key %in% list_of_keys) {
+      
+      drugs <- read_csv(paste0("data/drug_names.csv"))
+
+      return(drugs)
+      
+    } else {
+      return(list(error="Authentication required. Did you include an API key?"))
+    }
+    
+  }
+  
+}
+
+
+
 
 
 ### All Raw
@@ -1108,6 +1323,7 @@ function(key, res){
     }
   }
 }
+
 
 # #' @get /v1/docs/
 # function() {
