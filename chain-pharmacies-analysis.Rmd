@@ -1,0 +1,683 @@
+---
+title: "Chain pharmacies analysis"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{chain-pharmacies-analysis}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+This is the methodology behind a lot of the numbers that ended up in our [article](https://www.washingtonpost.com/investigations/2019/11/07/height-crisis-walgreens-handled-nearly-one-five-most-addictive-opioids/) on Walgreens. There are thirteen big numbers in the narrative of the story.
+
+First, let's load up the packages we need.
+
+There's a lot of new ones listed here so we can make fancy tables.
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+
+# Uncomment and run the lines below to see if you have the packages required already installed
+# packages <- c("dplyr", "ggplot2", "jsonlite", "knitr", "geofacet", "scales")
+# if (length(setdiff(packages, rownames(installed.packages()))) > 0) {
+#   install.packages(setdiff(packages, rownames(installed.packages())), repos = "http://cran.us.r-project.org") # }
+
+library(arcos)
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+library(data.table)
+library(formattable)
+library(stringr)
+library(scales)
+library(knitr)
+```
+
+### 1. Walgreens purchased nearly one out of every five oxycodone and hydrocodone pills
+
+```{r 1}
+
+```
+
+```{r
+### FACTS ----
+# 1. Walgreens purchased nearly one out of every five oxycodone and hydrocodone pills
+# 2. Walgreens bought 13 billion pills from 2006 - 2012
+# 3. Walgreens obtained 97 percent of its pain pills from itself
+# 4. Total pharmacies, around 8,000 in 2012
+# 5. Walgreens ordered 31 percent more oxycodone and hydrocodone pills per store on average compared to CVS pharmacies and 73 percent more compared to the rest worldwide
+# 6. Oviedo store: 30 milligram oxycodone pills doubled from 72,900 in March 2011 to 145,300 pills in July 2011
+# 7. Walgreens pharmacy on McHenry Avenue was the single largest purchaser of pain pills in the entire Walgreens chain from 2006 through 2012
+# 8. About one out of every five oxycodone pills ordered at the Modesto pharm was 30 milligrams.
+# 9. Walgreens and four other national chain pharmacies purchased about 1.6 billion of those pills, or roughly one-third of all distributed from 2006 through 2012. 
+# 10. ### At walgreens, those pills accounted for about 6 percent of the chain's overall opioid business compared to roughly 4.6 percent at CVS and 2 percent at walmart
+# 11. The Greenville store was the largest buyer of pain pills in the county from 2006 through 2012, and half of the pills ordered were oxycodone-- nearly twice the average of all other pharmacies nationwide
+# 12. By the end of 2012, orders of pain pills dipped to 2.2 billion from its peak of 2.4 billion the previous year, analysis shows.
+# 13. But Walgreens was still the largest buyer of pills containing oxycodone and hydrocodone
+
+### Setting up ----
+
+library(dplyr)
+library(ggplot2)
+library(feather)
+library(doParallel)
+library(arcos)
+
+setwd("~/Documents/arcos/arcos")
+registerDoParallel() # registered the parallel backend?
+#registerDoParallel(cores=36)
+registerDoParallel(cores=18)
+batch <- "batch/feather"
+feather_files <- list.files(batch)
+feather_path <- paste0(batch,  "/", feather_files)
+not_pharms <- read_csv("summary_data/not_pharms.csv")
+
+chains <- read_csv("MASTER_pharma_assignment_by_year.csv") %>% 
+  filter(!is.na(year)) %>% 
+  select(-X1) %>% 
+  mutate(year=as.character(year)) %>% 
+  select(-year, -method) %>% 
+  unique() 
+
+
+chains_annual <- read_csv("MASTER_pharma_assignment_by_year.csv") %>% 
+  filter(!is.na(year)) %>% 
+  select(-X1) %>% 
+  mutate(year=as.character(year))
+
+
+### 1. and 2. -----
+### Walgreens purchased nearly one out of every five oxycodone and hydrocodone pills
+### Walgreens bought 13 billion pills from 2006 - 2012
+
+
+results <- foreach(i=1:length(feather_path), .combine=rbind) %dopar% {
+  read_feather(feather_path[i]) %>%
+    filter(TRANSACTION_CODE=="S" & Measure=="TAB") %>% 
+    filter(DRUG_NAME=="OXYCODONE" | DRUG_NAME=="HYDROCODONE") %>% 
+    left_join(not_pharms) %>% 
+    mutate(BUYER_BUS_ACT=case_when(
+      !is.na(mail_hospital) ~ mail_hospital,
+      TRUE ~ BUYER_BUS_ACT
+    )) %>% 
+    mutate(BUYER_BUS_ACT=case_when(
+      BUYER_BUS_ACT=="CHAIN PHARMACY" ~ "PHARMACY",
+      BUYER_BUS_ACT=="RETAIL PHARMACY" ~ "PHARMACY",
+      TRUE ~ BUYER_BUS_ACT
+    )) %>% 
+    filter(BUYER_BUS_ACT=="PHARMACY") %>% 
+    select(-mail_hospital) %>% 
+    mutate(year=str_sub(TRANSACTION_DATE, -4)) %>% 
+    group_by(BUYER_DEA_NO, BUYER_BUS_ACT) %>% 
+    summarize(pils=sum(DOSAGE_UNIT, na.rm=T))
+}
+
+
+
+results <- results %>% 
+  group_by(BUYER_DEA_NO, BUYER_BUS_ACT) %>% 
+  summarize(pills=sum(pils, na.rm=T))
+
+results <- left_join(results, chains)
+
+results$buyer_family <- ifelse(is.na(results$buyer_family), "Other", results$buyer_family)
+
+results %>% group_by(buyer_family) %>% 
+  summarize(pills=sum(pills)) %>% 
+  mutate(percent=round(pills/sum(pills)*100)) 
+
+# I have Walgreens at 18 percent
+# Total pills : 12.989 billion
+
+### 3. ----
+### Walgreens obtained 97 percent of its pain pills from itself
+
+results <- foreach(i=1:length(feather_path), .combine=rbind) %dopar% {
+  read_feather(feather_path[i]) %>%
+    filter(TRANSACTION_CODE=="S" & Measure=="TAB") %>% 
+    filter(DRUG_NAME=="OXYCODONE" | DRUG_NAME=="HYDROCODONE") %>% 
+    left_join(not_pharms) %>% 
+    mutate(BUYER_BUS_ACT=case_when(
+      !is.na(mail_hospital) ~ mail_hospital,
+      TRUE ~ BUYER_BUS_ACT
+    )) %>% 
+    mutate(BUYER_BUS_ACT=case_when(
+      BUYER_BUS_ACT=="CHAIN PHARMACY" ~ "PHARMACY",
+      BUYER_BUS_ACT=="RETAIL PHARMACY" ~ "PHARMACY",
+      TRUE ~ BUYER_BUS_ACT
+    )) %>% 
+    filter(BUYER_BUS_ACT=="PHARMACY") %>% 
+    select(-mail_hospital) %>% 
+    mutate(year=str_sub(TRANSACTION_DATE, -4)) %>% 
+    group_by(Reporter_family, BUYER_DEA_NO, BUYER_BUS_ACT) %>% 
+    summarize(pills=sum(DOSAGE_UNIT, na.rm=T))
+}
+
+results <- results %>% 
+  group_by(Reporter_family, BUYER_DEA_NO, BUYER_BUS_ACT) %>% 
+  summarize(pills=sum(pills, na.rm=T))
+
+results <- left_join(results, chains)
+results$buyer_family <- ifelse(is.na(results$buyer_family), "Other", results$buyer_family)
+
+reporter_buyer <- results %>% group_by(Reporter_family, buyer_family) %>% 
+  summarize(pills=sum(pills)) %>% 
+  group_by(buyer_family) %>% 
+  mutate(percent=round(pills/sum(pills)*100))
+
+# Walgreen co 97 percent
+
+
+### 4. ----
+### Total pharmacies, around 8,000 in 2012
+
+results <- foreach(i=1:length(feather_path), .combine=rbind) %dopar% {
+  read_feather(feather_path[i]) %>%
+    filter(TRANSACTION_CODE=="S" & Measure=="TAB") %>% 
+    filter(DRUG_NAME=="OXYCODONE" | DRUG_NAME=="HYDROCODONE") %>% 
+    left_join(not_pharms) %>% 
+    mutate(BUYER_BUS_ACT=case_when(
+      !is.na(mail_hospital) ~ mail_hospital,
+      TRUE ~ BUYER_BUS_ACT
+    )) %>% 
+    mutate(BUYER_BUS_ACT=case_when(
+      BUYER_BUS_ACT=="CHAIN PHARMACY" ~ "PHARMACY",
+      BUYER_BUS_ACT=="RETAIL PHARMACY" ~ "PHARMACY",
+      TRUE ~ BUYER_BUS_ACT
+    )) %>% 
+    filter(BUYER_BUS_ACT=="PHARMACY") %>% 
+    select(-mail_hospital) %>% 
+    mutate(year=str_sub(TRANSACTION_DATE, -4)) %>% 
+    select(BUYER_DEA_NO, BUYER_BUS_ACT, year) %>% 
+    unique()
+}
+
+results <- unique(results)
+
+results <- left_join(results, chains_annual)
+results$buyer_family <- ifelse(is.na(results$buyer_family), "Other", results$buyer_family)
+
+buyers_year <- results %>% count(buyer_family, year)
+
+# 8052 walgreens in 2012
+
+### 5. ----
+### Walgreens ordered 30 percent more oxycodone and hydrocodone pills per store on average compared to CVS pharmacies and 85 percent more compared to the rest worldwide
+
+results <- foreach(i=1:length(feather_path), .combine=rbind) %dopar% {
+  read_feather(feather_path[i]) %>%
+    filter(TRANSACTION_CODE=="S" & Measure=="TAB") %>% 
+    filter(DRUG_NAME=="OXYCODONE" | DRUG_NAME=="HYDROCODONE") %>% 
+    left_join(not_pharms) %>% 
+    mutate(BUYER_BUS_ACT=case_when(
+      !is.na(mail_hospital) ~ mail_hospital,
+      TRUE ~ BUYER_BUS_ACT
+    )) %>% 
+    mutate(BUYER_BUS_ACT=case_when(
+      BUYER_BUS_ACT=="CHAIN PHARMACY" ~ "PHARMACY",
+      BUYER_BUS_ACT=="RETAIL PHARMACY" ~ "PHARMACY",
+      TRUE ~ BUYER_BUS_ACT
+    )) %>% 
+    select(-mail_hospital) %>% 
+    mutate(year=str_sub(TRANSACTION_DATE, -4)) %>% 
+    group_by(BUYER_DEA_NO, BUYER_BUS_ACT, DRUG_NAME, BUYER_COUNTY, BUYER_STATE, year) %>% 
+    summarize(orders=n(), pills=sum(DOSAGE_UNIT, na.rm=T))
+}
+
+drug_totals_year <- results %>% 
+  group_by(BUYER_DEA_NO, BUYER_BUS_ACT, DRUG_NAME, BUYER_COUNTY, BUYER_STATE, year) %>% 
+  summarize(orders=sum(orders), pills=sum(pills, na.rm=T))
+
+drug_totals_year <- left_join(drug_totals_year, chains_annual)
+
+drug_totals_year <- drug_totals_year %>% 
+  filter(BUYER_BUS_ACT=="PHARMACY")
+
+drug_totals_year$buyer_family <- ifelse(is.na(drug_totals_year$buyer_family), "Other", drug_totals_year$buyer_family)
+
+drugs <- drug_totals_year %>% 
+  group_by(BUYER_DEA_NO, buyer_family, BUYER_COUNTY, BUYER_STATE, year) %>% 
+  summarize(pills=sum(pills, na.rm=T)) %>% 
+  group_by(buyer_family, BUYER_COUNTY, BUYER_STATE, year) %>% 
+  summarize(stores=n(), pills=mean(pills, na.rm=T)) %>% 
+  mutate(pills_and_stores=stores*pills) %>% 
+  group_by(buyer_family, BUYER_COUNTY, BUYER_STATE) %>% 
+  summarize(pills=sum(pills_and_stores), stores=sum(stores)) %>% 
+  mutate(avg=pills/stores)
+
+drugs_alt <- drug_totals_year %>% 
+  group_by(BUYER_DEA_NO, buyer_family, BUYER_COUNTY, BUYER_STATE, year) %>% 
+  summarize(pills=sum(pills, na.rm=T)) %>% 
+  group_by(buyer_family, BUYER_COUNTY, BUYER_STATE, year) %>% 
+  summarize(stores=n(), pills=mean(pills, na.rm=T)) %>% 
+  group_by(buyer_family, BUYER_COUNTY, BUYER_STATE, ) %>% 
+  summarize(weighted_avg=weighted.mean(pills, stores))
+
+write_csv(drugs_alt, "family_county_weighted.csv", na="")
+
+pop <- county_population(key="WaPo")
+
+pop <- pop %>% select(BUYER_COUNTY, BUYER_STATE, countyfips) %>% unique()
+
+drugs_alt <- left_join(drugs_alt, pop)
+
+# How much more walgreens than cvs: 30.5521
+
+drug_totals_year$buyer_family <- ifelse(drug_totals_year$buyer_family!="Walgreen Co", "Other", drug_totals_year$buyer_family)
+drug_totals_year$buyer_family <- ifelse(is.na(drug_totals_year$buyer_family), "Other", drug_totals_year$buyer_family)
+
+drugs_alt <- drug_totals_year %>% 
+  group_by(BUYER_DEA_NO, buyer_family, year) %>% 
+  summarize(pills=sum(pills, na.rm=T)) %>% 
+  group_by(buyer_family, year) %>% 
+  summarize(stores=n(), pills=mean(pills, na.rm=T)) %>% 
+  group_by(buyer_family) %>% 
+  summarize(weighted_avg=weighted.mean(pills, stores))
+
+# How much more walgreens than everyone else: 72.65606
+
+### 6. ----
+### Oviedo store: 30 milligram oxycodone pills doubled from 72,900 in March 2011 to 145,300 pills in July 2011
+
+results <- foreach(i=1:length(feather_path), .combine=rbind) %dopar% {
+  read_feather(feather_path[i]) %>%
+    filter(TRANSACTION_CODE=="S" & Measure=="TAB") %>% 
+    filter(BUYER_DEA_NO=="BW8487438") %>% 
+    filter(DRUG_NAME=="OXYCODONE") %>%
+    #filter(dos_str==30) %>% 
+    mutate(year=str_sub(TRANSACTION_DATE, -4)) %>% 
+    mutate(month=str_sub(TRANSACTION_DATE, 0,2)) %>% 
+    group_by(BUYER_DEA_NO, year, month, dos_str) %>% 
+    summarize(pills=sum(DOSAGE_UNIT, na.rm=T))
+}
+
+results <- results %>% 
+  group_by(BUYER_DEA_NO, year, month, dos_str) %>% 
+  summarize(pills=sum(pills, na.rm=T))
+
+# 73,300 in March 2011 and 145,400 in July 2011
+
+### 7. ----
+### Walgreens pharmacy on McHenry Avenue was the single largest purchaser of pain pills in the entire Walgreens chain from 2006 through 2012
+
+
+results <- foreach(i=1:length(feather_path), .combine=rbind) %dopar% {
+  read_feather(feather_path[i]) %>%
+    filter(TRANSACTION_CODE=="S" & Measure=="TAB") %>% 
+    #filter(BUYER_DEA_NO=="BW8487438") %>% 
+    filter(DRUG_NAME=="OXYCODONE" | DRUG_NAME=="HYDROCODONE") %>%
+    filter(TRANSACTION_CODE=="S" & Measure=="TAB") %>% 
+    filter(DRUG_NAME=="OXYCODONE" | DRUG_NAME=="HYDROCODONE") %>% 
+    left_join(not_pharms) %>% 
+    mutate(BUYER_BUS_ACT=case_when(
+      !is.na(mail_hospital) ~ mail_hospital,
+      TRUE ~ BUYER_BUS_ACT
+    )) %>% 
+    mutate(BUYER_BUS_ACT=case_when(
+      BUYER_BUS_ACT=="CHAIN PHARMACY" ~ "PHARMACY",
+      BUYER_BUS_ACT=="RETAIL PHARMACY" ~ "PHARMACY",
+      TRUE ~ BUYER_BUS_ACT
+    )) %>% 
+    filter(BUYER_BUS_ACT=="PHARMACY") %>% 
+    select(-mail_hospital) %>% 
+    mutate(year=str_sub(TRANSACTION_DATE, -4)) %>% 
+    group_by(BUYER_DEA_NO, year) %>% 
+    summarize(pills=sum(DOSAGE_UNIT, na.rm=T))
+}
+
+
+results <- results %>% 
+  group_by(BUYER_DEA_NO, year) %>% 
+  summarize(pills=sum(pills))
+
+results <- left_join(results, chains_annual)
+results$buyer_family <- ifelse(is.na(results$buyer_family), "Other", results$buyer_family)
+
+results_ranked <- results %>% 
+  group_by(BUYER_DEA_NO, buyer_family) %>% 
+  summarize(pills=sum(pills)) %>% 
+  ungroup() %>% 
+  mutate(rank=rank(-pills)) %>% 
+  arrange(rank)
+
+# 11,908,560 pills, but ranks 44 out of all pharmacies. there are two cvses ahead of it.
+
+### 8. ----
+### About one out of every five oxycodone pills ordered at the Modesto pharm was 30 milligrams.
+
+
+results <- foreach(i=1:length(feather_path), .combine=rbind) %dopar% {
+  read_feather(feather_path[i]) %>%
+    filter(TRANSACTION_CODE=="S" & Measure=="TAB") %>% 
+    filter(BUYER_DEA_NO=="BW4243426") %>% 
+    filter(DRUG_NAME=="OXYCODONE") %>%
+    #filter(dos_str==30) %>% 
+    mutate(year=str_sub(TRANSACTION_DATE, -4)) %>% 
+    mutate(month=str_sub(TRANSACTION_DATE, 0,2)) %>% 
+    group_by(BUYER_DEA_NO, year, month, dos_str) %>% 
+    summarize(pills=sum(DOSAGE_UNIT, na.rm=T))
+}
+
+results <- results %>% 
+  group_by(BUYER_DEA_NO, year, month, dos_str) %>% 
+  summarize(pills=sum(pills, na.rm=T))
+
+dosages <- results %>% 
+  group_by(dos_str) %>% 
+  summarize(pills=sum(pills)) %>% 
+  mutate(percent=pills/sum(pills)*100)
+
+# okay, BW4243426 is 20 percent, yes
+
+### 9. ----
+### Walgreens and four other national chain pharmacies purchased about 1.6 billion of those pills, or roughly one-third of all distributed from 2006 through 2012. 
+
+results <- foreach(i=1:length(feather_path), .combine=rbind) %dopar% {
+  read_feather(feather_path[i]) %>%
+    filter(TRANSACTION_CODE=="S" & Measure=="TAB") %>% 
+    filter(DRUG_NAME=="OXYCODONE") %>%
+    left_join(not_pharms) %>% 
+    mutate(BUYER_BUS_ACT=case_when(
+      !is.na(mail_hospital) ~ mail_hospital,
+      TRUE ~ BUYER_BUS_ACT
+    )) %>% 
+    mutate(BUYER_BUS_ACT=case_when(
+      BUYER_BUS_ACT=="CHAIN PHARMACY" ~ "PHARMACY",
+      BUYER_BUS_ACT=="RETAIL PHARMACY" ~ "PHARMACY",
+      TRUE ~ BUYER_BUS_ACT
+    )) %>% 
+    filter(BUYER_BUS_ACT=="PHARMACY") %>% 
+    select(-mail_hospital) %>% 
+#    filter(DRUG_NAME=="OXYCODONE" | DRUG_NAME=="HYDROCODONE") %>% 
+    #filter(dos_str==30) %>% 
+    mutate(year=str_sub(TRANSACTION_DATE, -4)) %>% 
+    group_by(BUYER_DEA_NO, year, dos_str) %>% 
+    summarize(pills=sum(DOSAGE_UNIT, na.rm=T))
+}
+
+results <- results %>% 
+  group_by(BUYER_DEA_NO, year, dos_str) %>% 
+  summarize(pills=sum(pills, na.rm=T))
+
+results <- left_join(results, chains_annual)
+results$buyer_family <- ifelse(is.na(results$buyer_family), "Other", results$buyer_family)
+
+dosages <- results %>% 
+  group_by(buyer_family, dos_str) %>% 
+  filter(dos_str>=30) %>% 
+  group_by(buyer_family) %>% 
+  summarize(pills=sum(pills)) %>%
+  ungroup() %>% 
+  mutate(percent=pills/sum(pills)*100)
+
+results %>% ungroup() %>% summarize(pills=sum(pills))
+
+# 1.6 billion versus 4.9 billion, yup
+
+### 10. ----
+### At walgreens, those pills accounted for about 6 percent of the chain's overall opioid business compared to roughly 4.6 percent at CVS and 2 percent at walmart
+
+
+results <- foreach(i=1:length(feather_path), .combine=rbind) %dopar% {
+  read_feather(feather_path[i]) %>%
+    filter(TRANSACTION_CODE=="S" & Measure=="TAB") %>% 
+    filter(DRUG_NAME=="OXYCODONE" | DRUG_NAME=="HYDROCODONE") %>% 
+    #filter(DRUG_NAME=="OXYCODONE") %>%
+    left_join(not_pharms) %>% 
+    mutate(BUYER_BUS_ACT=case_when(
+      !is.na(mail_hospital) ~ mail_hospital,
+      TRUE ~ BUYER_BUS_ACT
+    )) %>% 
+    mutate(BUYER_BUS_ACT=case_when(
+      BUYER_BUS_ACT=="CHAIN PHARMACY" ~ "PHARMACY",
+      BUYER_BUS_ACT=="RETAIL PHARMACY" ~ "PHARMACY",
+      TRUE ~ BUYER_BUS_ACT
+    )) %>% 
+    filter(BUYER_BUS_ACT=="PHARMACY") %>% 
+    select(-mail_hospital) %>% 
+    
+    #filter(dos_str==30) %>% 
+    mutate(year=str_sub(TRANSACTION_DATE, -4)) %>% 
+    group_by(BUYER_DEA_NO, year, dos_str) %>% 
+    summarize(pills=sum(DOSAGE_UNIT, na.rm=T))
+}
+
+results <- results %>% 
+  group_by(BUYER_DEA_NO, year, dos_str) %>% 
+  summarize(pills=sum(pills, na.rm=T))
+
+results <- left_join(results, chains_annual)
+results$buyer_family <- ifelse(is.na(results$buyer_family), "Other", results$buyer_family)
+
+
+dosages <- results %>% 
+  group_by(buyer_family, dos_str) %>% 
+  mutate(type=case_when(
+    dos_str>=30 ~ "High", 
+    TRUE ~ "Low"
+  )) %>% 
+  group_by(buyer_family, type) %>% 
+  summarize(pills=sum(pills)) %>%
+  group_by(buyer_family) %>% 
+  mutate(percent=round(pills/sum(pills)*100,1))
+
+results %>% ungroup() %>% summarize(pills=sum(pills))
+
+# 6 perent walgreens
+# 4.9 at cvs
+
+### 11. ----
+###  The Greenville store was the largest buyer of pain pills in the county from 2006 through 2012, and half of the pills ordered were oxycodone-- nearly twice the average of all other pharmacies nationwide
+
+
+"BW7512595"
+
+results <- foreach(i=1:length(feather_path), .combine=rbind) %dopar% {
+  read_feather(feather_path[i]) %>%
+    filter(TRANSACTION_CODE=="S") %>% 
+  #& Measure=="TAB") %>% 
+    #filter(DRUG_NAME=="OXYCODONE" | DRUG_NAME=="HYDROCODONE") %>% 
+    #filter(DRUG_NAME=="OXYCODONE") %>%
+    left_join(not_pharms) %>% 
+    mutate(BUYER_BUS_ACT=case_when(
+      !is.na(mail_hospital) ~ mail_hospital,
+      TRUE ~ BUYER_BUS_ACT
+    )) %>% 
+    mutate(BUYER_BUS_ACT=case_when(
+      BUYER_BUS_ACT=="CHAIN PHARMACY" ~ "PHARMACY",
+      BUYER_BUS_ACT=="RETAIL PHARMACY" ~ "PHARMACY",
+      TRUE ~ BUYER_BUS_ACT
+    )) %>% 
+    filter(BUYER_BUS_ACT=="PHARMACY") %>% 
+    select(-mail_hospital) %>% 
+    #filter(dos_str==30) %>% 
+    mutate(year=str_sub(TRANSACTION_DATE, -4)) %>% 
+    group_by(BUYER_DEA_NO, year, DRUG_NAME) %>% 
+    summarize(pills=sum(DOSAGE_UNIT, na.rm=T))
+}
+
+results <- results %>% 
+  group_by(BUYER_DEA_NO, year, DRUG_NAME) %>% 
+  summarize(pills=sum(pills, na.rm=T))
+
+results2 <- results %>% 
+  group_by(BUYER_DEA_NO, DRUG_NAME) %>% 
+  summarize(pills=sum(pills)) %>% 
+  group_by(BUYER_DEA_NO) %>% 
+  mutate(percent=round(pills/sum(pills)*100))
+
+oxy_only <- results2 %>% filter(DRUG_NAME=="OXYCODONE")
+
+oxy_only %>% ungroup() %>% summarize(mean(percent, na.rm=T))
+# 29.3 vs 58
+
+### 12. ----
+### By the end of 2012, orders of pain pills dipped to 2.2 billion from its peak of 2.4 billion the previous year, analysis shows.
+
+### 13. ----
+### But Walgreens was still the largest buyer of pils containing oxycodone and hydrocodone
+
+
+### 14. ---
+### Did BW4243426 have the largest market share of any pharmacy in STANISLAUS county?
+
+results <- foreach(i=1:length(feather_path), .combine=rbind) %dopar% {
+  read_feather(feather_path[i]) %>%
+    filter(BUYER_COUNTY=="STANISLAUS" & BUYER_STATE=="CA") %>% 
+    filter(TRANSACTION_CODE=="S" & Measure=="TAB") %>% 
+    filter(DRUG_NAME=="OXYCODONE" | DRUG_NAME=="HYDROCODONE") %>% 
+    left_join(not_pharms) %>% 
+    mutate(BUYER_BUS_ACT=case_when(
+      !is.na(mail_hospital) ~ mail_hospital,
+      TRUE ~ BUYER_BUS_ACT
+    )) %>% 
+    mutate(BUYER_BUS_ACT=case_when(
+      BUYER_BUS_ACT=="CHAIN PHARMACY" ~ "PHARMACY",
+      BUYER_BUS_ACT=="RETAIL PHARMACY" ~ "PHARMACY",
+      TRUE ~ BUYER_BUS_ACT
+    )) %>% 
+    filter(BUYER_BUS_ACT=="PHARMACY") %>% 
+    select(-mail_hospital) %>% 
+    group_by(BUYER_DEA_NO) %>% 
+    summarize(pills=sum(DOSAGE_UNIT, na.rm=T))
+}
+
+results <- results %>% 
+  group_by(BUYER_DEA_NO) %>% 
+  summarize(pills=sum(pills, na.rm=T))
+
+results2 <- left_join(results, chains)
+
+buyers <- read_csv("buyers_addresses.csv")
+
+## by type
+
+results <- foreach(i=1:length(feather_path), .combine=rbind) %dopar% {
+  read_feather(feather_path[i]) %>%
+    filter(BUYER_COUNTY=="STANISLAUS" & BUYER_STATE=="CA") %>% 
+    filter(TRANSACTION_CODE=="S" & Measure=="TAB") %>% 
+    filter(DRUG_NAME=="OXYCODONE" | DRUG_NAME=="HYDROCODONE") %>% 
+    left_join(not_pharms) %>% 
+    mutate(BUYER_BUS_ACT=case_when(
+      !is.na(mail_hospital) ~ mail_hospital,
+      TRUE ~ BUYER_BUS_ACT
+    )) %>% 
+    mutate(BUYER_BUS_ACT=case_when(
+      BUYER_BUS_ACT=="CHAIN PHARMACY" ~ "PHARMACY",
+      BUYER_BUS_ACT=="RETAIL PHARMACY" ~ "PHARMACY",
+      TRUE ~ BUYER_BUS_ACT
+    )) %>% 
+    #filter(BUYER_BUS_ACT=="PHARMACY") %>% 
+    #select(-mail_hospital) %>% 
+    group_by(BUYER_DEA_NO, BUYER_BUS_ACT) %>% 
+    summarize(pills=sum(DOSAGE_UNIT, na.rm=T))
+}
+
+results <- results %>% 
+  group_by(BUYER_DEA_NO, BUYER_BUS_ACT) %>% 
+  summarize(pills=sum(pills, na.rm=T))
+
+results2 <- left_join(results, chains)
+
+
+addresses <- foreach(i=1:length(feather_path), .combine=rbind) %dopar% {
+  read_feather(feather_path[i]) %>%
+    filter(BUYER_COUNTY=="STANISLAUS" & BUYER_STATE=="CA") %>% 
+    filter(TRANSACTION_CODE=="S" & Measure=="TAB") %>% 
+    filter(DRUG_NAME=="OXYCODONE" | DRUG_NAME=="HYDROCODONE") %>% 
+    left_join(not_pharms) %>% 
+    mutate(BUYER_BUS_ACT=case_when(
+      !is.na(mail_hospital) ~ mail_hospital,
+      TRUE ~ BUYER_BUS_ACT
+    )) %>% 
+    mutate(BUYER_BUS_ACT=case_when(
+      BUYER_BUS_ACT=="CHAIN PHARMACY" ~ "PHARMACY",
+      BUYER_BUS_ACT=="RETAIL PHARMACY" ~ "PHARMACY",
+      TRUE ~ BUYER_BUS_ACT
+    )) %>% 
+    #filter(BUYER_BUS_ACT=="PHARMACY") %>% 
+    #select(-mail_hospital) %>% 
+   select(BUYER_DEA_NO, BUYER_BUS_ACT, BUYER_ADDRESS1, BUYER_ADDRESS2, BUYER_ADDL_CO_INFO, BUYER_CITY, BUYER_COUNTY, BUYER_STATE, BUYER_ZIP) %>% 
+    unique()
+}
+
+addresses <- unique(addresses)
+library(arcos)
+
+wpadd <- pharm_latlon(county="STANISLAUS", state="CA", key="WaPo")
+stan_hosp <- read_csv("stan_hosp.csv")
+stan_hosp$X4 <- NULL
+stan_hosp$X7 <- NULL
+
+wpadd <- rbind(wpadd, stan_hosp)
+addresses <- left_join(addresses, wpadd)
+addresses <- filter(addresses, !is.na(lat))
+
+addresses <- left_join(addresses, results2)
+addresses <- addresses %>% 
+  mutate(buyer_family=case_when(
+    is.na(buyer_family) & BUYER_BUS_ACT!="PHARMACY" ~ "Hospital/Clinic",
+    is.na(buyer_family) & BUYER_BUS_ACT=="PHARMACY" ~ "Other",
+    TRUE ~ buyer_family
+  ))
+
+library(leaflet)
+
+cof <- colorFactor(c("#e41a1c", "#377eb8","#4daf4a","#984ea3","#984ea3"), 
+                   domain=c("CVS", "Hospital/Clinic", "Other", "Wal-Mart", "Walgreen Co"))
+
+addresses$text <- paste0("<b>",addresses$buyer_family, "</b><br/>",
+                         addresses$BUYER_ADDRESS1, "<br/>",
+                         addresses$pills)
+m <- leaflet(addresses) %>% 
+  addProviderTiles(providers$CartoDB.DarkMatter) %>% 
+  setView(-120.981433,37.663025, zoom = 9) %>% 
+  addCircleMarkers(~lon, ~lat, popup=addresses$text, weight = 3, radius=log(addresses$pills), 
+                   color=~cof(buyer_family), stroke = F, fillOpacity = 0.5) 
+m
+
+##
+results_summary <- results2 %>% filter(BUYER_DEA_NO!="BK8062197") %>%
+  filter(BUYER_BUS_ACT=="PHARMACY") %>% 
+  group_by(buyer_family) %>% summarize(pills=sum(pills, na.rm=T))
+
+## OVIEDO CHECK
+
+
+results <- foreach(i=1:length(feather_path), .combine=rbind) %dopar% {
+  read_feather(feather_path[i]) %>%
+    filter(TRANSACTION_CODE=="S" & Measure=="TAB") %>% 
+    filter(DRUG_NAME=="OXYCODONE" | DRUG_NAME=="HYDROCODONE") %>% 
+    filter(BUYER_DEA_NO=="BW8487438")
+}
+
+
+# oxy strength
+
+
+
+
+results <- foreach(i=1:length(feather_path), .combine=rbind) %dopar% {
+  read_feather(feather_path[i]) %>%
+    filter(BUYER_DEA_NO=="BW8487438") %>% 
+    filter(TRANSACTION_CODE=="S" & Measure=="TAB") %>% 
+    filter(DRUG_NAME=="OXYCODONE") %>% 
+    mutate(year=str_sub(TRANSACTION_DATE, -4)) %>% 
+    mutate(month=str_sub(TRANSACTION_DATE, 0,2)) %>% 
+    group_by(year, month, dos_str) %>% 
+    summarize(pills=sum(DOSAGE_UNIT, na.rm=T))
+}
+
+library(lubridate)
+
+results <- results %>% 
+  group_by(year, month, dos_str) %>% 
+  summarize(pills=sum(pills, na.rm=T)) %>% 
+  mutate(date=ymd(paste0(year, "/", month, "/01")))
+
+ggplot(results, aes(x=date, y=pills)) + geom_bar(stat="identity") + facet_wrap(~dos_str)
+
+}
