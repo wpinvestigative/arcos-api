@@ -78,9 +78,9 @@ function(state, county, key){
 
 #' Returns all data by county (Will be large and could take extra time to load)
 #' @param key Key needed to make query successful
-#' @param county If provided, filter the data to only this county (e.g. 'Mingo')
-#' @param state If provided, filter the data to only this state (e.g. 'WV')
-#' @param drug If provided, filter the data to only this drug (e.g. 'OXYCODONE')
+#' @param county Filter the data to only this county (e.g. 'Sonoma')
+#' @param stateF ilter the data to only this state (e.g. 'CA')
+#' @param drug Filter the data to only this drug (e.g. 'FENTANYL')
 #' @tag raw
 #' @get /v1/county_data_drug
 function(state, county, drug, key){
@@ -109,12 +109,12 @@ function(state, county, drug, key){
           
         county_fips <- county_relationship_file_only %>% pull(countyfips)
         
-        state_abb <- str_to_upperr(state_abb)
+        state_abb <- str_to_upper(state_abb)
         county_name <- str_to_upper(county_name)
         county_name <- gsub(" ", "-", county_name)
         drug_lookup <- str_to_upper(gsub(", ", "-", drug))
         
-        url <- paste0(base_url, drug_lookup, "-", state_abb, "-", county_name, "-", county_fips, "-ITEMIZED.CSV")
+        url <- paste0(base_url, drug_lookup, "-", state_abb, "-", county_name, "-", county_fips, "-ITEMIZED.RDS")
         
         df <- vroom(url)
         return(df)
@@ -133,6 +133,56 @@ function(state, county, drug, key){
     }
   }
 }
+
+
+### County data by individual drug via fips code 
+
+#' Returns all data by county FIPS code (Will be large and could take extra time to load)
+#' @param key Key needed to make query successful
+#' @param fips Filter the data to only this county (e.g. '09003' for Hartford, Connecticut)
+#' @param drug Filter the data to only this drug (e.g. 'FENTANYL')
+#' @tag raw
+#' @get /v1/county_fips_data_drug
+function(fips, key){
+  
+  if (missing(key)) {
+    return(list(error="Authentication required. Did you include an API key?"))
+  } else {
+    if (key %in% list_of_keys) {
+      
+      base_url <- "https://wp-stat.s3.amazonaws.com/dea-pain-pill-database/summary/arcos-"
+      
+      #state_abb <- str_to_upper(state)
+      #county_name <- str_to_upper(county)
+      
+      county_relationship_file_only <- county_relationship_file %>% 
+        filter(countyfips==fips)
+      
+      if (!fips %in% county_relationship_fips) {
+        return(list(error="No such place. Did you mistype the six-character FIPS code?"))
+        
+      } else {
+        state_abb <- county_relationship_file_only %>% pull(BUYER_STATE) %>% str_to_lower()
+        county_name <- county_relationship_file_only %>% pull(BUYER_COUNTY) %>% str_to_lower()
+        
+        url <- paste0(base_url, state_abb, "-", county_name, "-", fips, "-itemized.tsv")
+        
+        df <- vroom(url)
+        return(df)
+        ## instead of reading the DF locally and returning it, we'll just 302 temp. redirect users to the WWW Page
+        #res$status <- 302
+        #res$setHeader('Location', url);
+        #return(res)
+      }
+      
+    } else {
+      return(list(error="Authentication required. Did you include an API key?"))
+    }
+  }
+}
+
+
+
 
 ### County populations
 
@@ -1264,6 +1314,7 @@ function(state, county, year, key){
 } 
 
 
+
 ### Drug list
 
 #' Returns simple dataframe of drugs tracked in the ARCOS database
@@ -1278,7 +1329,7 @@ function(key){
     if (key %in% list_of_keys) {
       
       drugs <- read_csv(paste0("data/drug_names.csv"))
-
+      
       return(drugs)
       
     } else {
@@ -1288,9 +1339,6 @@ function(key){
   }
   
 }
-
-
-
 
 
 ### All Raw
