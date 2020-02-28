@@ -105,7 +105,6 @@ function(state, county, drug, key){
       } else {
         
         if (!missing(drug) & str_to_upper(drug) %in% drug_types) { 
-        
           
         county_fips <- county_relationship_file_only %>% pull(countyfips)
         
@@ -122,7 +121,7 @@ function(state, county, drug, key){
         #res$setHeader('Location', url)
         #return(res);
         } else {
-          return(list(error="Drug name missing. Use the drug_list() function to see the options."))
+          return(list(error="Drug name missing. Use the drug_list query to see the 14 drug options."))
           
         }
       }
@@ -143,14 +142,14 @@ function(state, county, drug, key){
 #' @param drug Filter the data to only this drug (e.g. 'FENTANYL')
 #' @tag raw
 #' @get /v1/county_fips_data_drug
-function(fips, key){
+function(drug, fips, key){
   
   if (missing(key)) {
     return(list(error="Authentication required. Did you include an API key?"))
   } else {
     if (key %in% list_of_keys) {
       
-      base_url <- "https://wp-stat.s3.amazonaws.com/dea-pain-pill-database/summary/arcos-"
+      base_url <- "https://wp-stat.s3.amazonaws.com/dea-pain-pill-database/drugs/ARCOS-"
       
       #state_abb <- str_to_upper(state)
       #county_name <- str_to_upper(county)
@@ -162,17 +161,31 @@ function(fips, key){
         return(list(error="No such place. Did you mistype the six-character FIPS code?"))
         
       } else {
-        state_abb <- county_relationship_file_only %>% pull(BUYER_STATE) %>% str_to_lower()
-        county_name <- county_relationship_file_only %>% pull(BUYER_COUNTY) %>% str_to_lower()
         
-        url <- paste0(base_url, state_abb, "-", county_name, "-", fips, "-itemized.tsv")
         
-        df <- vroom(url)
-        return(df)
-        ## instead of reading the DF locally and returning it, we'll just 302 temp. redirect users to the WWW Page
-        #res$status <- 302
-        #res$setHeader('Location', url);
-        #return(res)
+        if (!str_to_upper(drug) %in% drug_types) {
+          return(list(error="No such drug. Use the drug_list query to see the 14 drug options."))
+          
+        } else {
+          
+          
+          drug_lookup <- str_to_upper(gsub(", ", "-", drug))
+          
+          state_abb <- county_relationship_file_only %>% pull(BUYER_STATE) 
+          county_name <- county_relationship_file_only %>% pull(BUYER_COUNTY)
+          county_name <- gsub(" ", "-", county_name)
+          county_fips <- fips
+          
+          url <- paste0(base_url, drug_lookup, "-", state_abb, "-", county_name, "-", county_fips, "-ITEMIZED.RDS")
+          
+          df <- vroom(url)
+          return(df)
+          
+          ## instead of reading the DF locally and returning it, we'll just 302 temp. redirect users to the WWW Page
+          #res$status <- 302
+          #res$setHeader('Location', url);
+          #return(res)
+        }
       }
       
     } else {
