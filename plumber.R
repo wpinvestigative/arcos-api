@@ -106,20 +106,20 @@ function(state, county, drug, key){
         
         if (!missing(drug) & str_to_upper(drug) %in% drug_types) { 
           
-        county_fips <- county_relationship_file_only %>% pull(countyfips)
-        
-        state_abb <- str_to_upper(state_abb)
-        county_name <- str_to_upper(county_name)
-        county_name <- gsub(" ", "-", county_name)
-        drug_lookup <- str_to_upper(gsub(", ", "-", drug))
-        
-        url <- paste0(base_url, drug_lookup, "-", state_abb, "-", county_name, "-", county_fips, "-ITEMIZED.RDS")
-        
-        df <- vroom(url)
-        return(df)
-        #res$status <- 302
-        #res$setHeader('Location', url)
-        #return(res);
+          county_fips <- county_relationship_file_only %>% pull(countyfips)
+          
+          state_abb <- str_to_upper(state_abb)
+          county_name <- str_to_upper(county_name)
+          county_name <- gsub(" ", "-", county_name)
+          drug_lookup <- str_to_upper(gsub(", ", "-", drug))
+          
+          url_dl <- paste0(base_url, drug_lookup, "-", state_abb, "-", county_name, "-", county_fips, "-ITEMIZED.RDS")
+          
+          df <- readRDS(gzcon(url(url_dl)))
+          return(df)
+          #res$status <- 302
+          #res$setHeader('Location', url)
+          #return(res);
         } else {
           return(list(error="Drug name missing. Use the drug_list query to see the 14 drug options."))
           
@@ -176,9 +176,9 @@ function(drug, fips, key){
           county_name <- gsub(" ", "-", county_name)
           county_fips <- fips
           
-          url <- paste0(base_url, drug_lookup, "-", state_abb, "-", county_name, "-", county_fips, "-ITEMIZED.RDS")
+          url_dl <- paste0(base_url, drug_lookup, "-", state_abb, "-", county_name, "-", county_fips, "-ITEMIZED.RDS")
           
-          df <- vroom(url)
+          df <- readRDS(gzcon(url(url_dl)))
           return(df)
           
           ## instead of reading the DF locally and returning it, we'll just 302 temp. redirect users to the WWW Page
@@ -213,7 +213,7 @@ function(state, county, key){
   } else {
     if (key %in% list_of_keys) {
       
-#      df <- read_csv("data/pop_counties_20062012.csv")
+      #      df <- read_csv("data/pop_counties_20062012.csv")
       df <- read_csv("data/pop_counties_20062014.csv")
       
       # Filter if the state was specified
