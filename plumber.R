@@ -134,6 +134,51 @@ function(state, county, drug, key){
 }
 
 
+### County data via fips code
+
+#' Returns all data by county FIPS code (Will be large and could take extra time to load)
+#' @param key Key needed to make query successful
+#' @param fips If provided, filter the data to only this county (e.g. '01001' for Autauga, Alabama)
+#' @tag raw
+#' @get /v1/county_fips_data
+function(fips, key){
+  
+  if (missing(key)) {
+    return(list(error="Authentication required. Did you include an API key?"))
+  } else {
+    if (key %in% list_of_keys) {
+      
+      base_url <- "https://wp-stat.s3.amazonaws.com/dea-pain-pill-database/summary/arcos-"
+      
+      #state_abb <- str_to_upper(state)
+      #county_name <- str_to_upper(county)
+      
+      county_relationship_file_only <- county_relationship_file %>% 
+        filter(countyfips==fips)
+      
+      if (!fips %in% county_relationship_fips) {
+        return(list(error="No such place. Did you mistype the six-character FIPS code?"))
+        
+      } else {
+        state_abb <- county_relationship_file_only %>% pull(BUYER_STATE) %>% str_to_lower()
+        county_name <- county_relationship_file_only %>% pull(BUYER_COUNTY) %>% str_to_lower()
+        
+        url <- paste0(base_url, state_abb, "-", county_name, "-", fips, "-itemized.tsv")
+        
+        df <- vroom(url)
+        return(df)
+        ## instead of reading the DF locally and returning it, we'll just 302 temp. redirect users to the WWW Page
+        #res$status <- 302
+        #res$setHeader('Location', url);
+        #return(res)
+      }
+      
+    } else {
+      return(list(error="Authentication required. Did you include an API key?"))
+    }
+  }
+}
+
 ### County data by individual drug via fips code 
 
 #' Returns all data by county FIPS code (Will be large and could take extra time to load)
@@ -309,51 +354,6 @@ function(state, key){
     
   }
   
-}
-
-### County data via fips code
-
-#' Returns all data by county FIPS code (Will be large and could take extra time to load)
-#' @param key Key needed to make query successful
-#' @param fips If provided, filter the data to only this county (e.g. '01001' for Autauga, Alabama)
-#' @tag raw
-#' @get /v1/county_fips_data
-function(fips, key){
-  
-  if (missing(key)) {
-    return(list(error="Authentication required. Did you include an API key?"))
-  } else {
-    if (key %in% list_of_keys) {
-      
-      base_url <- "https://wp-stat.s3.amazonaws.com/dea-pain-pill-database/summary/arcos-"
-      
-      #state_abb <- str_to_upper(state)
-      #county_name <- str_to_upper(county)
-      
-      county_relationship_file_only <- county_relationship_file %>% 
-        filter(countyfips==fips)
-      
-      if (!fips %in% county_relationship_fips) {
-        return(list(error="No such place. Did you mistype the six-character FIPS code?"))
-        
-      } else {
-        state_abb <- county_relationship_file_only %>% pull(BUYER_STATE) %>% str_to_lower()
-        county_name <- county_relationship_file_only %>% pull(BUYER_COUNTY) %>% str_to_lower()
-        
-        url <- paste0(base_url, state_abb, "-", county_name, "-", fips, "-itemized.tsv")
-        
-        df <- vroom(url)
-        return(df)
-        ## instead of reading the DF locally and returning it, we'll just 302 temp. redirect users to the WWW Page
-        #res$status <- 302
-        #res$setHeader('Location', url);
-        #return(res)
-      }
-      
-    } else {
-      return(list(error="Authentication required. Did you include an API key?"))
-    }
-  }
 }
 
 
@@ -1263,6 +1263,33 @@ function(state, county, key){
 }
 
 
+### BUYER_BUS_ACT types
+
+#' Returns simple dataframe of business types listed in the BUYER_BUS_ACT (e.g. CHAIN PHARMACY, HOSPITAL/CLINIC, MAINT & DETOX) and count.
+#' Leave out county and state variables to pull entire country list
+#' @param key Key needed to make query successful
+#' @tag supplemental
+#' @get /v1/buyer_list
+function(key){
+  
+  if (missing(key)) {
+    return(list(error="Authentication required. Did you include an API key?"))
+  } else {
+    if (key %in% list_of_keys) {
+      
+      buyer_list <- read_csv("data/buyer_list14.csv")
+      
+      return(county_download)
+      
+    } else {
+      return(list(error="Authentication required. Did you include an API key?"))
+    }
+    
+  }
+  
+}
+
+
 ### Monthly pharmacy dosages
 
 #' Returns dosages by pharmacy or practitioner by county, state, and year
@@ -1332,7 +1359,7 @@ function(state, county, year, key){
 
 #' Returns simple dataframe of drugs tracked in the ARCOS database
 #' @param key Key needed to make query successful
-#' @tag raw
+#' @tag supplemental
 #' @get /v1/drug_list
 function(key){
   
