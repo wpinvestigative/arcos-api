@@ -79,11 +79,12 @@ function(state, county, key){
 #' Returns all data by county (Will be large and could take extra time to load)
 #' @param key Key needed to make query successful
 #' @param county Filter the data to only this county (e.g. 'Sonoma')
-#' @param stateF ilter the data to only this state (e.g. 'CA')
+#' @param state Filter the data to only this state (e.g. 'CA')
 #' @param drug Filter the data to only this drug (e.g. 'FENTANYL')
+#' @param buyer_bus_act If included, filters the data to only this buyer type (e.g. 'HOSP/CLINIC' or 'RETAIL PHARMACY')
 #' @tag raw
 #' @get /v1/county_data_drug
-function(state, county, drug, key){
+function(state, county, drug, buyer_bus_act, key){
   
   if (missing(key)) {
     return(list(error="Authentication required. Did you include an API key?"))
@@ -116,6 +117,11 @@ function(state, county, drug, key){
           url_dl <- paste0(base_url, drug_lookup, "-", state_abb, "-", county_name, "-", county_fips, "-ITEMIZED.RDS")
           
           df <- readRDS(gzcon(url(url_dl)))
+          
+          if (!missing(buyer_bus_act)) {
+            df <- df %>% filter(BUYER_BUS_ACT==buyer_bus_act)
+          }
+          
           return(df)
           #res$status <- 302
           #res$setHeader('Location', url)
@@ -185,6 +191,7 @@ function(fips, key){
 #' @param key Key needed to make query successful
 #' @param fips Filter the data to only this county (e.g. '09003' for Hartford, Connecticut)
 #' @param drug Filter the data to only this drug (e.g. 'FENTANYL')
+#' @param buyer_bus_act If included, filters the data to only this buyer type (e.g. 'HOSP/CLINIC' or 'RETAIL PHARMACY')
 #' @tag raw
 #' @get /v1/county_fips_data_drug
 function(drug, fips, key){
@@ -222,6 +229,11 @@ function(drug, fips, key){
           county_fips <- fips
           
           url_dl <- paste0(base_url, drug_lookup, "-", state_abb, "-", county_name, "-", county_fips, "-ITEMIZED.RDS")
+          
+          
+          if (!missing(buyer_bus_act)) {
+            df <- df %>% filter(BUYER_BUS_ACT==buyer_bus_act)
+          }
           
           df <- readRDS(gzcon(url(url_dl)))
           return(df)
