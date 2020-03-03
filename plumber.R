@@ -119,11 +119,12 @@ function(state, county, drug, buyer_bus_act, key){
           df <- readRDS(gzcon(url(url_dl)))
           
           if (!missing(buyer_bus_act)) {
+            buyer_bus_act <- gsub("%20", " ", buyer_bus_act)
             
             df <- df %>% filter(BUYER_BUS_ACT==str_to_upper(buyer_bus_act))
             
             if (nrow(df)==0) {
-              return(list(error="That type of BUYER_BUS_ACT not available in this county. Did you spell it right?"))
+              return(list(error="That type of BUYER_BUS_ACT not available in this county"))
             } else {
               return(df)
             }
@@ -243,11 +244,12 @@ function(drug, fips, key){
           df <- readRDS(gzcon(url(url_dl)))
           
           if (!missing(buyer_bus_act)) {
+            buyer_bus_act <- gsub("%20", " ", buyer_bus_act)
             
             df <- df %>% filter(BUYER_BUS_ACT==str_to_upper(buyer_bus_act))
             
             if (nrow(df)==0) {
-              return(list(error="That type of BUYER_BUS_ACT not available in this county. Did you spell it right?"))
+              return(list(error="That type of BUYER_BUS_ACT not available in this county. Did you spell it correct?"))
             } else {
               return(df)
             }
