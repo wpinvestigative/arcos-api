@@ -119,10 +119,19 @@ function(state, county, drug, buyer_bus_act, key){
           df <- readRDS(gzcon(url(url_dl)))
           
           if (!missing(buyer_bus_act)) {
+            
             df <- df %>% filter(BUYER_BUS_ACT==buyer_bus_act)
+            
+            if (nrow(df)==0) {
+              return(list(error="That type of BUYER_BUS_ACT not available in this county"))
+            } else {
+              return(df)
+            }
+          } else {
+            return(df)
           }
           
-          return(df)
+          
           #res$status <- 302
           #res$setHeader('Location', url)
           #return(res);
@@ -231,12 +240,20 @@ function(drug, fips, key){
           url_dl <- paste0(base_url, drug_lookup, "-", state_abb, "-", county_name, "-", county_fips, "-ITEMIZED.RDS")
           
           
-          if (!missing(buyer_bus_act)) {
-            df <- df %>% filter(BUYER_BUS_ACT==buyer_bus_act)
-          }
-          
           df <- readRDS(gzcon(url(url_dl)))
-          return(df)
+          
+          if (!missing(buyer_bus_act)) {
+            
+            df <- df %>% filter(BUYER_BUS_ACT==buyer_bus_act)
+            
+            if (nrow(df)==0) {
+              return(list(error="That type of BUYER_BUS_ACT not available in this county"))
+            } else {
+              return(df)
+            }
+          } else {
+            return(df)
+          }
           
           ## instead of reading the DF locally and returning it, we'll just 302 temp. redirect users to the WWW Page
           #res$status <- 302
@@ -1291,7 +1308,7 @@ function(key){
       
       buyer_list <- read_csv("data/buyer_list14.csv")
       
-      return(county_download)
+      return(buyer_list)
       
     } else {
       return(list(error="Authentication required. Did you include an API key?"))
