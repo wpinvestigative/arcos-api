@@ -1,6 +1,6 @@
 #* @apiTitle Washington Post ARCOS API
 #* @apiDescription API to access the DEA's ARCOS data prepared by [The Washington Post](https://www.washingtonpost.com/graphics/2019/investigations/dea-pain-pill-database/). 
-#*   Check out the R package [ARCOS](https://github.com/wpinvestigative/arcos), that's a wrapper for this API.
+#*   Check out the R package [arcos](https://github.com/wpinvestigative/arcos) and Python library [arcospy](https://pypi.org/project/arcospy/), which are wrappers for this API.
 #*   Use "WaPo" as the key or use any of the keys [listed here](https://github.com/wpinvestigative/arcos/blob/master/keys/keys.txt). 
 #*   We reserve the right to discontinue these keys and invite users to sign up for their own individual one in the future if the need arises.
 #*   There are three categories of data offered in this API. 1) Raw and slices of the raw data  
@@ -74,7 +74,7 @@ function(state, county, key){
 }
 
 
-### County data by individual drug
+### Raw data by county and individual drug and business type
 
 #' Returns all data by county (Will be large and could take extra time to load)
 #' @param key Key needed to make query successful
@@ -195,7 +195,7 @@ function(fips, key){
   }
 }
 
-### County data by individual drug via fips code 
+### Raw data by county and individual drug and business type via fips code 
 
 #' Returns all data by county FIPS code (Will be large and could take extra time to load)
 #' @param key Key needed to make query successful
