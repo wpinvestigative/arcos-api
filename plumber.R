@@ -204,11 +204,12 @@ function(fips, key){
 #' @param buyer_bus_act If included, filters the data to only this buyer type (e.g. 'HOSP/CLINIC' or 'RETAIL PHARMACY')
 #' @tag raw
 #' @get /v1/county_fips_data_drug
-function(drug, fips, key){
+function(drug, fips, buyer_bus_act, key){
   
   if (missing(key)) {
     return(list(error="Authentication required. Did you include an API key?"))
   } else {
+    
     if (key %in% list_of_keys) {
       
       base_url <- "https://wp-stat.s3.amazonaws.com/dea-pain-pill-database/drugs/ARCOS-"
@@ -243,20 +244,26 @@ function(drug, fips, key){
           
           df <- readRDS(gzcon(url(url_dl)))
           
-          if (!missing(buyer_bus_act)) {
-            buyer_bus_act <- gsub("%20", " ", buyer_bus_act)
-            
-            df <- df %>% filter(BUYER_BUS_ACT==str_to_upper(buyer_bus_act))
-            
-            if (nrow(df)==0) {
-              return(list(error="That type of BUYER_BUS_ACT not available in this county. Did you spell it correct?"))
+          if (nrow(df)!=0) {
+            if (!missing(buyer_bus_act)) {
+              buyer_bus_act <- gsub("%20", " ", buyer_bus_act)
+              
+              df <- df %>% filter(BUYER_BUS_ACT==str_to_upper(buyer_bus_act))
+              
+              if (nrow(df)==0) {
+                #return(list(error="That type of BUYER_BUS_ACT not available in this county. Did you spell it correct?"))
+              } else {
+                return(df)
+                print("yay!")
+              }
             } else {
               return(df)
+              print("yay!")
             }
           } else {
-            return(df)
+            return(list(error="Drug not found for this county"))
+            
           }
-          
           ## instead of reading the DF locally and returning it, we'll just 302 temp. redirect users to the WWW Page
           #res$status <- 302
           #res$setHeader('Location', url);
