@@ -1,6 +1,6 @@
 build.yml
-docker-compose.yml
 Dockerfile
+docker-compose.yml
 nile.yml
 data/keys.RDS
 
