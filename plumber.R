@@ -1103,7 +1103,7 @@ function(state, key){
         
       } else {
         county_fips <- county_relationship_file_only %>% pull(countyfips)
-        
+
         state_abb <- str_to_lower(state_abb)
         
         url <- paste0(base_url, state_abb, "-county-distributor.tsv")
@@ -1452,7 +1452,7 @@ function(key, res){
 
 #' Health check for ALB (Part of deployment process, not part of the API)
 #' @tag z_ignore
-#' @get /healthcheck
+#' @get /arcos/healthcheck
 function() {
   return(list(message="Everything is fine."));
 }
