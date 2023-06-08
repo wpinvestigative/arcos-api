@@ -1102,7 +1102,6 @@ function(state, key){
         return(list(error="No such place. Do you have the state abbreviation spelled right? https://www.washingtonpost.com/graphics/2019/investigations/dea-pain-pill-database/#download-resources"))
         
       } else {
-        county_fips <- county_relationship_file_only %>% pull(countyfips)
 
         state_abb <- str_to_lower(state_abb)
         
