@@ -30,7 +30,7 @@ drug_types <- read_csv(paste0("data/drug_names.csv")) %>% pull(DRUG_NAME)
 #' @param county If provided, filter the data to only this county (e.g. 'Mingo')
 #' @param state If provided, filter the data to only this state (e.g. 'WV')
 #' @tag raw
-#' @get /v1/county_data
+#' @get /arcos/v1/county_data
 function(state, county, key){
   
   if (missing(key)) {
@@ -83,7 +83,7 @@ function(state, county, key){
 #' @param drug Filter the data to only this drug (e.g. 'FENTANYL')
 #' @param buyer_bus_act If included, filters the data to only this buyer type (e.g. 'HOSP/CLINIC' or 'RETAIL PHARMACY')
 #' @tag raw
-#' @get /v1/county_data_drug
+#' @get /arcos/v1/county_data_drug
 function(state, county, drug, buyer_bus_act, key){
   
   if (missing(key)) {
@@ -156,7 +156,7 @@ function(state, county, drug, buyer_bus_act, key){
 #' @param key Key needed to make query successful
 #' @param fips If provided, filter the data to only this county (e.g. '01001' for Autauga, Alabama)
 #' @tag raw
-#' @get /v1/county_fips_data
+#' @get /arcos/v1/county_fips_data
 function(fips, key){
   
   if (missing(key)) {
@@ -203,7 +203,7 @@ function(fips, key){
 #' @param drug Filter the data to only this drug (e.g. 'FENTANYL')
 #' @param buyer_bus_act If included, filters the data to only this buyer type (e.g. 'HOSP/CLINIC' or 'RETAIL PHARMACY')
 #' @tag raw
-#' @get /v1/county_fips_data_drug
+#' @get /arcos/v1/county_fips_data_drug
 function(drug, fips, buyer_bus_act, key){
   
   if (missing(key)) {
@@ -287,7 +287,7 @@ function(drug, fips, buyer_bus_act, key){
 #' @param county If provided, filter the data to only this county (e.g. 'Mingo')
 #' @param state If provided, filter the data to only this state (e.g. 'WV')
 #' @tag supplemental
-#' @get /v1/county_population
+#' @get /arcos/v1/county_population
 function(state, county, key){
   
   
@@ -335,7 +335,7 @@ function(state, county, key){
 #' Returns list of 330+ BUYER_DEA_NOs that we've identified as mail order or hospitals and not retail or chain pharmacies
 #' @param key Key needed to make query successful
 #' @tag supplemental
-#' @get /v1/not_pharmacies
+#' @get /arcos/v1/not_pharmacies
 function(key){
   
   
@@ -363,7 +363,7 @@ function(key){
 #' @param key Key needed to make query successful
 #' @param state If provided, filter the data to only this state (e.g. 'WV')
 #' @tag supplemental
-#' @get /v1/state_population
+#' @get /arcos/v1/state_population
 function(state, key){
   
   
@@ -402,7 +402,7 @@ function(state, key){
 #' @param county If provided, filter the data to only this county (e.g. 'Mingo')
 #' @param state If provided, filter the data to only this state (e.g. 'WV')
 #' @tag supplemental
-#' @get /v1/pharmacy_latlon
+#' @get /arcos/v1/pharmacy_latlon
 function(state, county, key){
   
   if (missing(key)) {
@@ -447,7 +447,7 @@ function(state, county, key){
 #' @param county If provided, filter the data to only this county (e.g. 'Mingo')
 #' @param state If provided, filter the data to only this state (e.g. 'WV')
 #' @tag supplemental
-#' @get /v1/pharmacy_counties
+#' @get /arcos/v1/pharmacy_counties
 function(state, county, key){
   
   if (missing(key)) {
@@ -492,7 +492,7 @@ function(state, county, key){
 #' @param county If provided, filter the data to only this county (e.g. 'Mingo')
 #' @param state If provided, filter the data to only this state (e.g. 'WV')
 #' @tag supplemental
-#' @get /v1/pharmacy_tracts
+#' @get /arcos/v1/pharmacy_tracts
 function(state, county, key){
   
   if (missing(key)) {
@@ -538,7 +538,7 @@ function(state, county, key){
 #' @param state If geoid isn't provided, filter the data to only this state (e.g. 'WV')
 #' @param geoid If provided, filter the data to the cbsa GEOID (e.g. '26580') 
 #' @tag supplemental
-#' @get /v1/pharmacy_cbsa
+#' @get /arcos/v1/pharmacy_cbsa
 function(geoid, state, county, key){
   
   if (missing(key)) {
@@ -589,7 +589,7 @@ function(geoid, state, county, key){
 #' @param key Key needed to make query successful
 #' @param buyer_dea_no Required number (e.g. 'AB0454176')
 #' @tag raw
-#' @get /v1/pharmacy_data
+#' @get /arcos/v1/pharmacy_data
 function(buyer_dea_no, key){
   
   if (missing(key)) {
@@ -639,7 +639,7 @@ function(buyer_dea_no, key){
 #' @param county If provided, filter the data to only this county (e.g. 'Mingo')
 #' @param state If provided, filter the data to only this state (e.g. 'WV')
 #' @tag raw
-#' @get /v1/buyer_details
+#' @get /arcos/v1/buyer_details
 function(state, county, key){
   
   if (missing(key)) {
@@ -686,7 +686,7 @@ function(state, county, key){
 #' @param county If provided, filter the data to only this county (e.g. 'Mingo')
 #' @param state If provided, filter the data to only this state (e.g. 'WV')
 #' @tag raw
-#' @get /v1/reporter_details
+#' @get /arcos/v1/reporter_details
 function(state, county, key){
   
   
@@ -734,7 +734,7 @@ function(state, county, key){
 #' @param county If provided, filter the data to only this county (e.g. 'Mingo')
 #' @param state If provided, filter the data to only this state (e.g. 'WV')
 #' @tag summary
-#' @get /v1/combined_county_annual
+#' @get /arcos/v1/combined_county_annual
 function(state, county, key){
   
   if (missing(key)) {
@@ -793,7 +793,7 @@ function(state, county, key){
 #' @param county If provided, filter the data to only this county (e.g. 'Mingo')
 #' @param state If provided, filter the data to only this state (e.g. 'WV')
 #' @tag summary
-#' @get /v1/combined_county_monthly
+#' @get /arcos/v1/combined_county_monthly
 function(state, county, key){
   
   if (missing(key)) {
@@ -851,7 +851,7 @@ function(state, county, key){
 #' @param county If provided, filter the data to only this county (e.g. 'Mingo')
 #' @param state If provided, filter the data to only this state (e.g. 'WV')
 #' @tag summary
-#' @get /v1/total_pharmacies_county
+#' @get /arcos/v1/total_pharmacies_county
 function(state, county, key){
   
   if (missing(key)) {
@@ -902,7 +902,7 @@ function(state, county, key){
 #' @param county If provided, filter the data to only this county (e.g. 'Mingo')
 #' @param state If provided, filter the data to only this state (e.g. 'WV')
 #' @tag summary
-#' @get /v1/total_manufacturers_county
+#' @get /arcos/v1/total_manufacturers_county
 function(state, county, key){
   
   if (missing(key)) {
@@ -953,7 +953,7 @@ function(state, county, key){
 #' @param county If provided, filter the data to only this county (e.g. 'Mingo')
 #' @param state If provided, filter the data to only this state (e.g. 'WV')
 #' @tag summary
-#' @get /v1/total_distributors_county
+#' @get /arcos/v1/total_distributors_county
 function(state, county, key){
   
   if (missing(key)) {
@@ -1003,7 +1003,7 @@ function(state, county, key){
 #' @param key Key needed to make query successful
 #' @param state If provided, filter the data to only this state (e.g. 'WV')
 #' @tag summary
-#' @get /v1/total_pharmacies_state
+#' @get /arcos/v1/total_pharmacies_state
 function(state, key){
   
   if (missing(key)) {
@@ -1044,7 +1044,7 @@ function(state, key){
 #' @param key Key needed to make query successful
 #' @param state If provided, filter the data to only this state (e.g. 'WV')
 #' @tag summary
-#' @get /v1/total_manufacturers_state
+#' @get /arcos/v1/total_manufacturers_state
 function(state, key){
   
   if (missing(key)) {
@@ -1086,7 +1086,7 @@ function(state, key){
 #' @param key Key needed to make query successful
 #' @param state If provided, filter the data to only this state (e.g. 'WV')
 #' @tag summary
-#' @get /v1/total_distributors_state
+#' @get /arcos/v1/total_distributors_state
 function(state, key){
   
   if (missing(key)) {
@@ -1128,7 +1128,7 @@ function(state, key){
 #' @param county If provided, filter the data to only this county (e.g. 'Mingo')
 #' @param state If provided, filter the data to only this state (e.g. 'WV')
 #' @tag summary
-#' @get /v1/combined_buyer_annual
+#' @get /arcos/v1/combined_buyer_annual
 function(state, county, key){
   
   if (missing(key)) {
@@ -1186,7 +1186,7 @@ function(state, county, key){
 #' @param county If provided, filter the data to only this county (e.g. 'Mingo')
 #' @param state If provided, filter the data to only this state (e.g. 'WV')
 #' @tag summary
-#' @get /v1/combined_buyer_monthly
+#' @get /arcos/v1/combined_buyer_monthly
 function(state, county, year, key){
   
   if (missing(key)) {
@@ -1249,7 +1249,7 @@ function(state, county, year, key){
 #' @param county If provided, filter the data to only this county (e.g. 'Mingo')
 #' @param state If provided, filter the data to only this state (e.g. 'WV')
 #' @tag supplemental
-#' @get /v1/county_list
+#' @get /arcos/v1/county_list
 function(state, county, key){
   
   if (missing(key)) {
@@ -1306,7 +1306,7 @@ function(state, county, key){
 #' Leave out county and state variables to pull entire country list
 #' @param key Key needed to make query successful
 #' @tag supplemental
-#' @get /v1/buyer_list
+#' @get /arcos/v1/buyer_list
 function(key){
   
   if (missing(key)) {
@@ -1335,7 +1335,7 @@ function(key){
 #' @param county If provided, filter the data to only this county (e.g. 'Mingo')
 #' @param state If provided, filter the data to only this state (e.g. 'WV')
 #' @tag summary
-#' @get /v1/combined_buyer_monthly
+#' @get /arcos/v1/combined_buyer_monthly
 function(state, county, year, key){
   
   if (missing(key)) {
@@ -1397,7 +1397,7 @@ function(state, county, year, key){
 #' Returns simple dataframe of drugs tracked in the ARCOS database
 #' @param key Key needed to make query successful
 #' @tag supplemental
-#' @get /v1/drug_list
+#' @get /arcos/v1/drug_list
 function(key){
   
   if (missing(key)) {
@@ -1425,7 +1425,7 @@ function(key){
 #' @param key Key needed to make query successful
 #' @serializer contentType list(type="text/tab-separated-values")
 #' @tag raw
-#' @get /v1/all_the_data
+#' @get /arcos/v1/all_the_data
 function(key, res){
   
   if (missing(key)) {
@@ -1449,19 +1449,12 @@ function(key, res){
   }
 }
 
-
-# #' @get /v1/docs/
-# function() {
-# return(pr$swaggerFile());
-# }
-
 #' Health check for ALB (Part of deployment process, not part of the API)
 #' @tag z_ignore
-#' @get /healthcheck
+#' @get /arcos/healthcheck
 function() {
   return(list(message="Everything is fine."));
 }
-
 
 #* @filter cors
 cors <- function(res) {
@@ -1470,8 +1463,3 @@ cors <- function(res) {
   res$setHeader("Access-Control-Allow-Headers", "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Content-Range,Range")
   plumber::forward()
 }
-
-
-#pr <- plumb("plumber.R")  # Where 'plumber.R' is the location of the file shown above
-# r$run(host="0.0.0.0",port=8000)
-

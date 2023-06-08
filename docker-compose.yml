@@ -1,0 +1,11 @@
+version: "3.7"
+
+services:
+  # This service runs the arcos_api application 
+  arcos_api:
+    build: .
+    expose:
+      - "8000"
+    ports:
+      - "8000:8000"
+

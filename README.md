@@ -10,6 +10,8 @@ If you see an error in our summary or supplemental files, please submit a pull r
 
 **Do you use R?** Try out the [arcos api wrapper](https://github.com/wpinvestigative/arcos).
 
+**Do you use [Docker](https://docs.docker.com/desktop/)?** Run the application yourself on your local machine with the command: `docker-compose up`. 
+
 |  **Data Files** | **What** |
 | --- | --- |
 |  data_dictionary.csv | Descriptions of every field in the ARCOS raw data |
