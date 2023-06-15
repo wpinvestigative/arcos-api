@@ -12,6 +12,8 @@ If you see an error in our summary or supplemental files, please submit a pull r
 
 **Do you use [Docker](https://docs.docker.com/desktop/)?** Run the application yourself on your local machine with the command: `docker-compose up`. 
 
+**Note: if you make alterations to the plumber.R file, you'll need to regenerate `./docs/openapi.json`. In order to host the API at `/arcos/`, this repo alters some plumber defaults, the location of its `openapi.json` among them.** 
+
 |  **Data Files** | **What** |
 | --- | --- |
 |  data_dictionary.csv | Descriptions of every field in the ARCOS raw data |
