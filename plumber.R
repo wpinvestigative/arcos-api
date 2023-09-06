@@ -1,7 +1,7 @@
 #* @apiTitle Washington Post ARCOS API
 #* @apiDescription API to access the DEA's ARCOS data prepared by [The Washington Post](https://www.washingtonpost.com/graphics/2019/investigations/dea-pain-pill-database/). 
 #*   Check out the R package [arcos](https://github.com/wpinvestigative/arcos) and Python library [arcospy](https://pypi.org/project/arcospy/), which are wrappers for this API.
-#*   Use "WaPo" as the key or use any of the keys [listed here](https://github.com/wpinvestigative/arcos/blob/master/keys/keys.txt). 
+#*   Use "WaPo" as the key or use any of the keys [listed here](https://github.com/wpinvestigative/arcos-api/blob/master/keys/keys.txt). 
 #*   We reserve the right to discontinue these keys and invite users to sign up for their own individual one in the future if the need arises.
 #*   There are three categories of data offered in this API. 1) Raw and slices of the raw data  
 #*   2) Summarized data (based on our [filters and criteria](https://www.washingtonpost.com/national/2019/07/18/how-download-use-dea-pain-pills-database/)) for easier analysis 
